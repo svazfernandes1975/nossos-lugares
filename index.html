@@ -356,54 +356,61 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 /* ── MOBILE ── */
 @media(max-width:640px){
-  /* topbar em 2 linhas */
-  #topbar{
-    padding:.6rem 1rem .3rem;
-    gap:.5rem;
-    flex-wrap:wrap;
-    align-items:center;
-  }
+  /* topbar 2 linhas */
+  #topbar{padding:.6rem 1rem .3rem;gap:.5rem;flex-wrap:wrap;align-items:center}
   .brand{font-size:.85rem;flex:1}
   .vtoggle{flex-shrink:1}
   .vbtn{font-size:9px;padding:3px 8px}
 
-  /* stats vira segunda linha do topbar */
-  .statsbar{
-    width:100%;
-    justify-content:space-around;
-    gap:0;
-    padding:.35rem 0 .15rem;
-    border-top:1px solid var(--border);
-    flex:none;
-  }
+  /* stats segunda linha */
+  .statsbar{width:100%;justify-content:space-around;gap:0;padding:.35rem 0 .15rem;border-top:1px solid var(--border);flex:none}
   .sval{font-size:.9rem}
   .slbl{font-size:8px}
 
-  /* panel sobe de baixo */
-  #panel{
-    width:100%;right:0;
-    border-left:none;border-top:1px solid var(--border2);
-    height:88vh;top:auto;bottom:-100vh;
-    border-radius:16px 16px 0 0;
-    transition:bottom .3s cubic-bezier(.4,0,.2,1);
-  }
+  /* theme popover full width */
+  #theme-pop{right:.5rem;left:.5rem;top:5rem;max-height:calc(100vh - 6rem)}
+
+  /* stats modal bottom sheet */
+  #stats-modal{align-items:flex-end;padding:0}
+  .smodal{max-width:100%;max-height:92vh;border-radius:16px 16px 0 0}
+  .smodal-body{padding:1rem}
+  .summary-grid{grid-template-columns:repeat(2,1fr)!important}
+
+  /* panel bottom sheet com drag handle */
+  #panel{width:100%;right:0;border-left:none;border-top:1px solid var(--border2);height:92vh;top:auto;bottom:-100vh;border-radius:16px 16px 0 0;transition:bottom .3s cubic-bezier(.4,0,.2,1)}
   #panel.open{bottom:0}
+  .ph{position:relative;padding-top:1.5rem}
+  .ph::before{content:'';display:block;width:36px;height:4px;background:var(--border2);border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
 
   /* fab */
   #fab{bottom:5rem;right:1.25rem;width:46px;height:46px;font-size:1.3rem}
 
-  /* cross stats e legenda: esconde no mobile */
-  #xstats{display:none!important}
-  #legend{display:none!important}
+  /* legenda: visível mas colapsada no bottom */
+  #legend{top:auto;bottom:5.5rem;left:.75rem;min-width:110px}
+  #legend #leg-items{display:none}
 
-  /* zoom control */
+  /* cross stats: esconde */
+  #xstats{display:none!important}
+
+  /* zoom */
   .leaflet-bottom.leaflet-right{bottom:5rem!important}
+
+  /* popup */
+  .leaflet-popup-content-wrapper{min-width:200px!important;max-width:calc(100vw - 2rem)!important}
+  .pbox{padding:12px 14px}
+  .pname{font-size:.88rem}
+
+  /* long press ring */
+  #lp-ring{display:block}
 }
 </style>
 </head>
 <body>
 
 <div id="loading">carregando mapa...</div>
+
+<!-- LONG PRESS RING (mobile) -->
+<div id="lp-ring" style="display:none;position:fixed;width:52px;height:52px;border-radius:50%;border:3px solid var(--amber);pointer-events:none;transform:translate(-50%,-50%);z-index:999;opacity:0;transition:opacity .15s"></div>
 
 <!-- STATS MODAL -->
 <div id="stats-modal" onclick="if(event.target===this)closeStats()">
@@ -440,7 +447,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v32</div>
+<div id="ver">v34</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1653,12 +1660,27 @@ async function reverseGeocode(lat, lng) {
     if (d.error) { toast('Local não identificado — preencha manualmente'); openPanel(); return; }
 
     const addr = d.address || {};
-    const city    = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+
+    // Hierarquia completa — inclui state como fallback para casos como Lima/Peru
+    const city = addr.city
+      || addr.town
+      || addr.village
+      || addr.municipality
+      || addr.city_district
+      || addr.county
+      || addr.state_district
+      || addr.state
+      || '';
+
     const country = addr.country || '';
     const cont    = guessContinent(country);
 
-    // Preferir o nome da cidade sobre o ponto específico do clique
-    const name = city || d.namedetails?.['name:pt'] || d.display_name.split(',')[0].trim();
+    // Fallback do display_name: pula partes numéricas e muito curtas
+    const fallback = (d.display_name || '').split(',')
+      .map(p => p.trim())
+      .find(p => p && !/^\d+$/.test(p) && p.length > 2) || '';
+
+    const name = city || d.namedetails?.['name:pt'] || fallback;
 
     openPanel(); // reseta o form
 
@@ -1687,6 +1709,45 @@ initMap();
 map.on('contextmenu', function(e) {
   reverseGeocode(e.latlng.lat, e.latlng.lng);
 });
+
+// Long press no mobile (alternativa ao clique direito)
+(function() {
+  let lpTimer = null;
+  const ring = document.getElementById('lp-ring');
+
+  function showRing(x, y) {
+    if (!ring) return;
+    ring.style.left = x + 'px';
+    ring.style.top  = y + 'px';
+    ring.style.opacity = '1';
+    ring.style.transform = 'translate(-50%,-50%) scale(1)';
+  }
+  function hideRing() {
+    if (!ring) return;
+    ring.style.opacity = '0';
+  }
+  function cancelLP() {
+    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+    hideRing();
+  }
+
+  map.getContainer().addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    showRing(t.clientX, t.clientY);
+    lpTimer = setTimeout(() => {
+      lpTimer = null;
+      hideRing();
+      const rect = map.getContainer().getBoundingClientRect();
+      const ll = map.containerPointToLatLng(L.point(t.clientX - rect.left, t.clientY - rect.top));
+      reverseGeocode(ll.lat, ll.lng);
+    }, 700);
+  }, { passive: true });
+
+  map.getContainer().addEventListener('touchend',    cancelLP);
+  map.getContainer().addEventListener('touchcancel', cancelLP);
+  map.getContainer().addEventListener('touchmove',   cancelLP, { passive: true });
+})();
 
 setTimeout(() => {
   // Fallback: hide loading after 6s even if Firestore doesn't respond
