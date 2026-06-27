@@ -440,7 +440,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v29</div>
+<div id="ver">v32</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -475,8 +475,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   <div>
     <div class="tp-label">Estilo do mapa</div>
     <div class="tp-map-row">
-      <button class="tp-map-btn active" id="mb-escuro"   onclick="setMapStyle('escuro')">⬛ Escuro</button>
-      <button class="tp-map-btn"        id="mb-colorido" onclick="setMapStyle('colorido')">🗺 Colorido</button>
+      <button class="tp-map-btn"        id="mb-escuro"   onclick="setMapStyle('escuro')">⬛ Escuro</button>
+      <button class="tp-map-btn active" id="mb-colorido" onclick="setMapStyle('colorido')">🗺 Colorido</button>
       <button class="tp-map-btn"        id="mb-claro"    onclick="setMapStyle('claro')">⬜ Claro</button>
       <button class="tp-map-btn"        id="mb-satelite" onclick="setMapStyle('satelite')">🛰 Satélite</button>
       <button class="tp-map-btn"        id="mb-topo"     onclick="setMapStyle('topo')" style="grid-column:1/-1">🏔 Topográfico</button>
@@ -832,7 +832,7 @@ function setMapStyle(key) {
 function initMap() {
   map = L.map('map', { zoomControl:false }).setView([20, 10], 2);
   L.control.zoom({ position:'bottomright' }).addTo(map);
-  const saved = localStorage.getItem('t-mapstyle') || 'escuro';
+  const saved = localStorage.getItem('t-mapstyle') || 'colorido';
   setMapStyle(saved);
   setTimeout(() => map.invalidateSize(), 200);
 }
@@ -924,13 +924,35 @@ function renderMap() {
     showCoverageOnHover: false,
     zoomToBoundsOnClick: true,
     disableClusteringAtZoom: 4,
+    iconCreateFunction: function(cluster) {
+      const children = cluster.getAllChildMarkers();
+      let u1 = 0, u2 = 0;
+      children.forEach(m => {
+        if (m.options.userId === uids[0]) u1++;
+        else u2++;
+      });
+      const total  = children.length;
+      const c1     = getComputedStyle(document.documentElement).getPropertyValue('--u1').trim() || '#f97316';
+      const c2     = getComputedStyle(document.documentElement).getPropertyValue('--u2').trim() || '#a78bfa';
+      const mixed  = u1 > 0 && u2 > 0;
+      const bg     = mixed
+        ? `linear-gradient(135deg, ${c1} 50%, ${c2} 50%)`
+        : u1 > 0 ? c1 : c2;
+      const size   = total < 10 ? 34 : total < 100 ? 40 : 46;
+      return L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:${size<40?11:13}px;font-weight:800;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.5);text-shadow:0 1px 2px rgba(0,0,0,.5)">${total}</div>`,
+        iconSize:   [size, size],
+        iconAnchor: [size/2, size/2],
+      });
+    },
   });
   markers = {};
 
   // Add markers ao cluster
   vis.forEach(p => {
     if (isNaN(p.lat) || isNaN(p.lng)) return;
-    const m = L.marker([p.lat, p.lng], { icon: makeIcon(p) });
+    const m = L.marker([p.lat, p.lng], { icon: makeIcon(p), userId: p.userId });
     m.bindPopup(makePopup(p), { maxWidth:220, minWidth:200 });
     clusterGroup.addLayer(m);
     markers[p.id] = m;
@@ -1631,10 +1653,12 @@ async function reverseGeocode(lat, lng) {
     if (d.error) { toast('Local não identificado — preencha manualmente'); openPanel(); return; }
 
     const addr = d.address || {};
-    const name    = d.namedetails?.['name:pt'] || d.display_name.split(',')[0].trim();
-    const city    = addr.city || addr.town || addr.village || addr.municipality || name;
+    const city    = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
     const country = addr.country || '';
     const cont    = guessContinent(country);
+
+    // Preferir o nome da cidade sobre o ponto específico do clique
+    const name = city || d.namedetails?.['name:pt'] || d.display_name.split(',')[0].trim();
 
     openPanel(); // reseta o form
 
