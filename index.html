@@ -516,7 +516,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v67</div>
+<div id="ver">v68</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2382,17 +2382,27 @@ async function fetchAreaPlaces() {
   const b = map.getBounds();
   const s = b.getSouth().toFixed(4), w = b.getWest().toFixed(4);
   const n = b.getNorth().toFixed(4), e = b.getEast().toFixed(4);
-  const query = `[out:json][timeout:10];(node["place"~"^(city|town|village|hamlet)$"]["name"](${s},${w},${n},${e}););out 31;`;
+  // Inclui nós E relações (municípios BR são frequentemente relações)
+  const query = `[out:json][timeout:15];(
+    node["place"~"^(city|town|village|hamlet|municipality|isolated_dwelling|locality)$"]["name"](${s},${w},${n},${e});
+    relation["place"~"^(city|town|village|hamlet|municipality)$"]["name"]["admin_level"](${s},${w},${n},${e});
+  );out center 31;`;
 
   try {
     const r = await fetch('https://overpass-api.de/api/interpreter', {
       method:'POST', body:'data='+encodeURIComponent(query)
     });
     const d = await r.json();
-    const all = (d.elements||[]).sort((a,b)=>{
-      const o=['city','town','village','hamlet'];
-      return o.indexOf(a.tags.place)-o.indexOf(b.tags.place);
-    });
+    const all = (d.elements||[]).map(el => ({
+      name: el.tags?.['name:pt'] || el.tags?.name || '?',
+      type: el.tags?.place || 'village',
+      lat:  el.lat ?? el.center?.lat,
+      lon:  el.lon ?? el.center?.lon,
+    })).filter(el => el.lat && el.lon && el.name !== '?')
+       .sort((a,b) => {
+         const o=['city','town','municipality','village','hamlet','locality','isolated_dwelling'];
+         return o.indexOf(a.type)-o.indexOf(b.type);
+       });
 
     // Mais de 30 → pede mais zoom
     if (all.length > 30) {
@@ -2400,18 +2410,20 @@ async function fetchAreaPlaces() {
       return;
     }
 
-    if (!all.length) { status.textContent = 'Nenhuma cidade encontrada aqui'; return; }
+    if (!all.length) {
+      status.textContent = 'Poucos dados mapeados nesta área';
+      return;
+    }
 
-    const ICONS  = {city:'🏙',town:'🏘',village:'🏡',hamlet:'🏠'};
-    const LABELS = {city:'Cidade',town:'Município',village:'Vila',hamlet:'Lugarejo'};
+    const ICONS  = {city:'🏙',town:'🏘',municipality:'🏛',village:'🏡',hamlet:'🏠',locality:'📍',isolated_dwelling:'🏚'};
+    const LABELS = {city:'Cidade',town:'Município',municipality:'Município',village:'Vila',hamlet:'Lugarejo',locality:'Localidade',isolated_dwelling:'Lugarejo'};
 
     status.style.display = 'none';
     list.innerHTML = all.map(el=>{
-      const name = el.tags['name:pt']||el.tags.name||'?';
-      const type = el.tags.place;
-      return `<div class="exp-item" onclick="useExplorerPlace('${name.replace(/'/g,"\\'")}',${el.lat},${el.lon})">
+      const type = el.type;
+      return `<div class="exp-item" onclick="useExplorerPlace('${el.name.replace(/'/g,"\\'")}',${el.lat},${el.lon})">
         <span class="exp-icon">${ICONS[type]||'📍'}</span>
-        <span class="exp-name">${name}</span>
+        <span class="exp-name">${el.name}</span>
         <span class="exp-type">${LABELS[type]||type}</span>
       </div>`;
     }).join('');
