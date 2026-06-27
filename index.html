@@ -192,21 +192,65 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .etitle{font-size:1.1rem;font-weight:700;color:var(--muted2);margin-bottom:.4rem}
 .esub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 
+/* ── VERSION ── */
+#ver{
+  position:fixed;bottom:.5rem;left:50%;transform:translateX(-50%);z-index:50;
+  font-family:'DM Mono',monospace;font-size:9px;color:#2a2a2a;letter-spacing:.08em;
+  pointer-events:none;user-select:none;
+}
+
 /* ── MOBILE ── */
 @media(max-width:640px){
-  #topbar{padding:.6rem 1rem;gap:.6rem}
-  .brand{font-size:.85rem}
-  .statsbar{display:none}
-  #panel{width:100%;right:-100%;border-left:none;border-top:1px solid var(--border2);height:90vh;top:auto;bottom:-90vh;border-radius:16px 16px 0 0}
-  #panel.open{bottom:0;right:0}
-  #fab{bottom:1.5rem;right:1.5rem;width:46px;height:46px;font-size:1.3rem}
-  #xstats{font-size:9px;padding:.45rem .75rem;gap:.75rem;left:1rem}
+  /* topbar em 2 linhas */
+  #topbar{
+    padding:.6rem 1rem .3rem;
+    gap:.5rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .brand{font-size:.85rem;flex:1}
+  .vtoggle{flex-shrink:1}
+  .vbtn{font-size:9px;padding:3px 8px}
+
+  /* stats vira segunda linha do topbar */
+  .statsbar{
+    width:100%;
+    justify-content:space-around;
+    gap:0;
+    padding:.35rem 0 .15rem;
+    border-top:1px solid var(--border);
+    flex:none;
+  }
+  .sval{font-size:.9rem}
+  .slbl{font-size:8px}
+
+  /* panel sobe de baixo */
+  #panel{
+    width:100%;right:0;
+    border-left:none;border-top:1px solid var(--border2);
+    height:88vh;top:auto;bottom:-100vh;
+    border-radius:16px 16px 0 0;
+    transition:bottom .3s cubic-bezier(.4,0,.2,1);
+  }
+  #panel.open{bottom:0}
+
+  /* fab */
+  #fab{bottom:1.5rem;right:1.25rem;width:46px;height:46px;font-size:1.3rem}
+
+  /* cross stats: esconde no mobile pra não poluir */
+  #xstats{display:none!important}
+
+  /* zoom control */
+  .leaflet-bottom.leaflet-right{bottom:5rem!important}
 }
 </style>
 </head>
 <body>
 
 <div id="loading">carregando mapa...</div>
+
+<!-- VERSION -->
+<div id="ver">v12</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
