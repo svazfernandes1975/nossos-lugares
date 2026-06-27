@@ -448,7 +448,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v38</div>
+<div id="ver">v39</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1367,7 +1367,7 @@ async function doGeo() {
   el.innerHTML = '<div class="gr">Buscando...</div>';
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&namedetails=1&accept-language=pt`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&namedetails=1&accept-language=pt,en`,
       { headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
     );
     geoData = await r.json();
@@ -1683,7 +1683,7 @@ async function reverseGeocode(lat, lng) {
 
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&namedetails=1&accept-language=pt`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&namedetails=1&accept-language=pt,en`,
       { headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
     );
     const d = await r.json();
