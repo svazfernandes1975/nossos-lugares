@@ -350,6 +350,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .drill-panel{background:var(--bg3);border-radius:8px;margin:4px 0 10px;overflow-y:auto;max-height:220px}
 .drill-panel>div:last-child{border-bottom:none!important}
 
+.ftbtn{font-family:'DM Mono',monospace;font-size:9px;padding:4px 10px;border-radius:14px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s}
+.ftbtn.on{background:var(--bg2);color:var(--amber);border-color:var(--amber)}
+
 /* ── VERSION ── */
 #ver{
   position:fixed;bottom:.6rem;right:.8rem;z-index:50;
@@ -451,7 +454,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v57</div>
+<div id="ver">v61</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -598,6 +601,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
       <div class="lm" id="lm"></div>
     </div>
 
+    <div class="fg" id="forboth-row" style="display:none;flex-direction:row;align-items:center;gap:.75rem;background:var(--bg3);border-radius:8px;padding:.6rem .75rem">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);flex:1">Adicionar para</span>
+      <div style="display:flex;gap:4px">
+        <button class="ftbtn on" id="ftb-me"   onclick="setForBoth(false)">Só eu</button>
+        <button class="ftbtn"    id="ftb-both" onclick="setForBoth(true)">Nós dois</button>
+      </div>
+    </div>
+
     <div class="fg">
       <div class="flbl">Categoria</div>
       <select class="fs" id="f-cat">
@@ -688,6 +699,7 @@ let geoData      = [];
 let map;
 let uids         = [];
 let editingId    = null;  // id do place sendo editado (null = novo)
+let forBoth      = false; // adicionar para os dois usuários
 let legendOpen   = true;
 let activeCategories = new Set(['cidade','ponto','hardrock','praia','natureza','restaurante','outro']);
 
@@ -957,6 +969,68 @@ function makeIcon(place) {
   });
 }
 
+// ─── helper: retorna dados do outro usuário ───────────────────
+// ─── verifica se usuário já tem esse lugar (nome + país) ─────
+function userHasPlace(userId, name, country) {
+  return places.some(p =>
+    p.userId === userId &&
+    norm(p.name||'') === norm(name||'') &&
+    norm(p.country||'') === norm(country||'')
+  );
+}
+
+function getOtherUser() {
+  if (uids.length < 2) return null;
+  const otherUid = uids.find(u => u !== me?.uid);
+  if (!otherUid) return null;
+  const ref = places.find(p => p.userId === otherUid);
+  if (!ref) return null;
+  return { uid: otherUid, name: ref.userName, email: ref.userEmail };
+}
+
+function setForBoth(val) {
+  forBoth = val;
+  document.getElementById('ftb-me')  .classList.toggle('on', !val);
+  document.getElementById('ftb-both').classList.toggle('on',  val);
+}
+
+// ─── copiar lugar do outro para mim ──────────────────────────
+function copyPlaceToMe(id) {
+  if (!me) return;
+  const place = places.find(p => p.id === id);
+  if (!place) return;
+
+  // Guarda: verificar se já tenho esse lugar
+  if (userHasPlace(me.uid, place.name, place.country)) {
+    toast('⚠️ Você já tem "' + place.name + '" cadastrado!');
+    return;
+  }
+
+  map.closePopup();
+
+  editingId = null;
+  forBoth   = false;
+  pending   = { lat: place.lat, lng: place.lng, name: place.name,
+                city: place.city, country: place.country, countryCode: place.countryCode };
+
+  document.getElementById('panel-title').textContent = '📍 Copiar para mim';
+  document.getElementById('si').value           = place.name;
+  document.getElementById('f-cat').value         = place.category  || 'cidade';
+  document.getElementById('f-country').value     = place.country   || '';
+  document.getElementById('f-cont').value        = place.continent || getContinent(place) || '';
+  document.getElementById('f-year').value        = place.years?.length ? place.years.join(', ') : (place.year || '');
+  document.getElementById('f-notes').value       = place.notes     || '';
+  setRating(place.rating || 0);
+
+  document.getElementById('ln').textContent           = place.name;
+  document.getElementById('lm').textContent           = [place.city, place.country].filter(Boolean).join(', ');
+  document.getElementById('lprev').style.display      = 'block';
+  document.getElementById('bsave').disabled           = false;
+  document.getElementById('bsave').textContent        = 'Salvar para mim';
+  document.getElementById('forboth-row').style.display = 'none'; // não faz sentido "nós dois" aqui
+  document.getElementById('panel').classList.add('open');
+}
+
 function makePopup(place) {
   const c = uColor(place.userId);
   const cat = {
@@ -987,6 +1061,7 @@ function makePopup(place) {
     ${yrs ? `<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>` : ''}
     ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
     ${canEdit ? `<div style="display:flex;gap:5px;margin-top:10px">
+      ${place.userId !== me?.uid ? `<button class="pdel" style="margin:0;flex:1;text-align:center;color:var(--green);border-color:#1a3a1f" onclick="copyPlaceToMe('${place.id}')">＋ Para mim</button>` : ''}
       <button class="pdel" style="margin:0;flex:1;text-align:center;color:var(--blue);border-color:#1e3a5f" onclick="editPlace('${place.id}')">Editar</button>
       <button class="pdel" style="margin:0;flex:1;text-align:center" onclick="delPlace('${place.id}')">Remover</button>
     </div>` : ''}
@@ -1298,28 +1373,47 @@ function setStatsView(v, btn) {
   renderStats();
 }
 
+// ── CONTAGEM ÚNICA DE PAÍSES ─────────────────────────────────────────────
+// Função canônica — usada em TODO o site (topbar + stats)
+// Prioridade: ISO code > nome normalizado
+// Mesmo país de dois usuários = contado 1x
+function uniqueCountries(places) {
+  const seen = new Set();
+  places.forEach(p => {
+    const k = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+    if (k) seen.add(k);
+  });
+  return seen;
+}
+
+// Agrupa places por continente; retorna countryKey Sets e arrays de places
+function groupByContinent(places) {
+  const contMap = {};   // continente → Set de countryKeys únicos
+  const placeMap = {};  // continente → todas as places (para drill-down)
+  places.forEach(p => {
+    const ct = getContinent(p);
+    if (!ct) return;
+    if (!contMap[ct])  contMap[ct]  = new Set();
+    if (!placeMap[ct]) placeMap[ct] = [];
+    const ck = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+    if (ck) contMap[ct].add(ck);
+    placeMap[ct].push(p);
+  });
+  return { contMap, placeMap };
+}
+
 function renderStats() {
   const body = document.getElementById('stats-body');
   let vis = statsView==='all' ? places
             : statsView==='u1' ? places.filter(p=>p.userId===uids[0])
             : places.filter(p=>p.userId===uids[1]);
 
-  // Deduplicar: em modo 'Todos', mesmo lugar visitado por ambos conta uma vez
-  if (statsView==='all' && uids.length >= 2) {
-    const seen = new Map();
-    vis.forEach(p => {
-      const k = norm((p.name||'') + '|' + (p.country||''));
-      if (!seen.has(k)) seen.set(k, p);
-    });
-    vis = [...seen.values()];
-  }
-
   if (!vis.length) {
     body.innerHTML='<div style="text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;padding:2rem">Nenhum lugar ainda</div>';
     return;
   }
 
-  const countries  = new Set(vis.map(countryKey).filter(Boolean));
+  const countries  = uniqueCountries(vis);      // ← mesma lógica do topbar
   const continents = new Set(vis.map(p=>getContinent(p)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km         = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
@@ -1351,27 +1445,12 @@ function renderStats() {
   const hrCount = catCount['hardrock']||0;
 
   // continente
-  // Por continente: agrupa por país único primeiro, depois por continente
-  const byCountryKey={};
-  vis.forEach(p=>{
-    const ck = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
-    if(!ck) return;
-    if(!byCountryKey[ck]) byCountryKey[ck]={places:[],country:p.country||'',code:p.countryCode||''};
-    byCountryKey[ck].places.push(p);
-  });
-  const contCountries={};
-  const contPlacesMap={};
-  Object.values(byCountryKey).forEach(({places,country,code})=>{
-    const ct = getContinent({country,countryCode:code}) || '—';
-    if(!contCountries[ct]) contCountries[ct]=new Set();
-    if(!contPlacesMap[ct]) contPlacesMap[ct]=[];
-    contCountries[ct].add(country||code);
-    contPlacesMap[ct].push(...places);
-  });
+  // Por continente — usa groupByContinent (mesma lógica do topbar)
+  const { contMap: contCountries, placeMap: contPlacesMap } = groupByContinent(vis);
   const maxCont = Math.max(...Object.values(contCountries).map(s=>s.size), 1);
   const contColors={'América do Sul':'#4ade80','América do Norte':'#fbbf24','América Central':'#fb923c','Europa':'#60a5fa','Ásia':'#f97316','África':'#a78bfa','Oceania':'#2dd4bf'};
   const contCount = Object.fromEntries(Object.entries(contCountries).map(([k,v])=>[k,v.size]));
-  const favCont = Object.entries(contCount).sort((a,b)=>b[1]-a[1])[0];
+  const favCont   = Object.entries(contCount).sort((a,b)=>b[1]-a[1])[0];
 
   const viewLabel = statsView==='all'?'todos':statsView==='u1'?(places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0]:(places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0];
 
@@ -1495,7 +1574,15 @@ function renderStats() {
           ${open?`<div style="margin:4px 0 8px 8px">${innerDrillHTML(yp,key,drillYearCo,drillYearCat,'year-co','year-cat','var(--blue)')}</div>`:''}
         </div>`;
       }).join('')}
-      ${semData?`<div class="bar-row"><div class="bar-label" style="color:var(--muted)">sem data</div><div class="bar-track"><div class="bar-fill" style="width:${(semData/maxYC*100).toFixed(0)}%;background:var(--muted)"></div></div><div class="bar-count" style="color:var(--muted)">${semData}</div></div>`:''}
+      ${semData?`<div style="margin-bottom:2px">
+        <div class="bar-row" onclick="toggleDrill('year','sem-data')" style="cursor:pointer;border-radius:6px;${drillYear==='sem-data'?'background:var(--bg3);padding-inline:6px':''}">
+          <div class="bar-label" style="color:${drillYear==='sem-data'?'var(--muted2)':'var(--muted)'}">sem data</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(semData/maxYC*100).toFixed(0)}%;background:var(--muted)"></div></div>
+          <div class="bar-count" style="color:var(--muted)">${semData}</div>
+          <span style="margin-left:6px;color:var(--muted2);font-size:10px">${drillYear==='sem-data'?'▲':'▼'}</span>
+        </div>
+        ${drillYear==='sem-data'?`<div style="margin:4px 0 8px 8px">${innerDrillHTML(vis.filter(p=>{ const yrs=p.years?.length?p.years:(p.year!=null?[p.year]:[]); return yrs.length===0; }),('sem-data'),drillYearCo,drillYearCat,'year-co','year-cat','var(--muted2)')}</div>`:''}
+      </div>`:''}
     </div>`:''}
 
     <hr class="sdivider">
@@ -1760,34 +1847,58 @@ async function savePlace() {
   if (!me || !pending) return;
   const btn = document.getElementById('bsave');
   btn.disabled = true;
-  btn.textContent = editingId ? 'Atualizando…' : 'Salvando…';
+  btn.textContent = forBoth ? 'Salvando para os dois…' : (editingId ? 'Atualizando…' : 'Salvando…');
 
   const rating = parseInt(document.getElementById('f-rating').value) || 0;
-  const doc = {
-    name:      pending.name,
-    city:      pending.city,
-    country:   document.getElementById('f-country').value.trim(),
+  const base = {
+    name:        pending.name,
+    city:        pending.city,
+    country:     document.getElementById('f-country').value.trim(),
     countryCode: pending.countryCode || '',
-    continent: document.getElementById('f-cont').value,
-    category:  document.getElementById('f-cat').value,
-    years:     document.getElementById('f-year').value.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900),
-    notes:     document.getElementById('f-notes').value.trim(),
-    rating:    rating,
-    lat:       pending.lat,
-    lng:       pending.lng,
-    userId:    me.uid,
-    userName:  me.displayName || me.email,
-    userEmail: me.email,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    continent:   document.getElementById('f-cont').value,
+    category:    document.getElementById('f-cat').value,
+    years:       document.getElementById('f-year').value.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900),
+    notes:       document.getElementById('f-notes').value.trim(),
+    rating,
+    lat:         pending.lat,
+    lng:         pending.lng,
+    timestamp:   firebase.firestore.FieldValue.serverTimestamp(),
   };
 
   try {
     if (editingId) {
-      await db.collection('places').doc(editingId).update(doc);
-      toast('✓ ' + doc.name + ' atualizado!');
+      await db.collection('places').doc(editingId).update({
+        ...base, userId: me.uid, userName: me.displayName||me.email, userEmail: me.email
+      });
+      toast('✓ ' + base.name + ' atualizado!');
     } else {
-      await db.collection('places').add(doc);
-      toast('✓ ' + doc.name + ' adicionado!');
+      // Guarda: verificar duplicata para mim mesmo
+      if (userHasPlace(me.uid, base.name, base.country)) {
+        toast('⚠️ Você já tem "' + base.name + '" cadastrado!');
+        btn.disabled = false;
+        btn.textContent = 'Salvar lugar';
+        return;
+      }
+      await db.collection('places').add({
+        ...base, userId: me.uid, userName: me.displayName||me.email, userEmail: me.email
+      });
+      if (forBoth) {
+        const other = getOtherUser();
+        if (other) {
+          if (userHasPlace(other.uid, base.name, base.country)) {
+            toast('✓ ' + base.name + ' adicionado para você. ⚠️ ' + other.name + ' já tem esse lugar!');
+          } else {
+            await db.collection('places').add({
+              ...base, userId: other.uid, userName: other.name, userEmail: other.email
+            });
+            toast('✓ ' + base.name + ' adicionado para os dois!');
+          }
+        } else {
+          toast('✓ ' + base.name + ' adicionado!');
+        }
+      } else {
+        toast('✓ ' + base.name + ' adicionado!');
+      }
     }
     closePanel();
   } catch(e) {
@@ -1803,6 +1914,9 @@ async function savePlace() {
 function openPanel() {
   if (!me) { toast('Faça login para adicionar lugares'); return; }
   resetForm();
+  // Mostra toggle "nós dois" só quando há dois usuários
+  const row = document.getElementById('forboth-row');
+  if (row) row.style.display = (uids.length >= 2 && getOtherUser()) ? 'flex' : 'none';
   document.getElementById('panel').classList.add('open');
   document.getElementById('si').focus();
 }
@@ -1814,17 +1928,19 @@ function closePanel() {
 
 function resetForm() {
   editingId = null;
-  pending = null;
+  forBoth   = false;
+  pending   = null;
   ['si','f-country','f-year','f-notes'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('f-cat').value   = 'cidade';
-  document.getElementById('f-cont').value  = '';
+  document.getElementById('f-cat').value    = 'cidade';
+  document.getElementById('f-cont').value   = '';
   document.getElementById('f-rating').value = '0';
   setRating(0);
   document.getElementById('gres').style.display  = 'none';
   document.getElementById('lprev').style.display = 'none';
-  document.getElementById('bsave').disabled = true;
-  document.getElementById('bsave').textContent = 'Salvar lugar';
+  document.getElementById('bsave').disabled      = true;
+  document.getElementById('bsave').textContent   = 'Salvar lugar';
   document.getElementById('panel-title').textContent = '📍 Adicionar lugar';
+  setForBoth(false);
 }
 
 // ═══════════════════════════════════════════════════════════════
