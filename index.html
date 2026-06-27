@@ -347,6 +347,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .tp-map-btn:hover{color:var(--text);border-color:var(--muted2)}
 .tp-map-btn.active{border-color:var(--amber);color:var(--amber);background:var(--bg2)}
 
+.drill-panel{background:var(--bg3);border-radius:8px;margin:4px 0 10px;overflow-y:auto;max-height:220px}
+.drill-panel>div:last-child{border-bottom:none!important}
+
 /* ── VERSION ── */
 #ver{
   position:fixed;bottom:.6rem;right:.8rem;z-index:50;
@@ -448,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v39</div>
+<div id="ver">v44</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -560,7 +563,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   <div class="xs-sep"></div>
   <div class="xs-block">
     <div class="xs-num" id="xs-c" style="color:var(--green)">—</div>
-    <div class="xs-lbl">países em comum</div>
+    <div class="xs-lbl">juntos</div>
   </div>
   <div class="xs-sep"></div>
   <div class="xs-block">
@@ -712,104 +715,84 @@ const ICONS_LABEL = {
   outro:       '📌 Outro',
 };
 
+// Mapa ISO alpha-2 → continente (todos os 250 países — genérico e confiável)
+const CONT_CODE = {
+  'dz':'África','ao':'África','bj':'África','bw':'África','bf':'África','bi':'África',
+  'cv':'África','cm':'África','cf':'África','td':'África','km':'África','cg':'África',
+  'cd':'África','ci':'África','dj':'África','eg':'África','gq':'África','er':'África',
+  'sz':'África','et':'África','ga':'África','gm':'África','gh':'África','gn':'África',
+  'gw':'África','ke':'África','ls':'África','lr':'África','ly':'África','mg':'África',
+  'mw':'África','ml':'África','mr':'África','mu':'África','ma':'África','mz':'África',
+  'na':'África','ne':'África','ng':'África','rw':'África','st':'África','sn':'África',
+  'sc':'África','sl':'África','so':'África','za':'África','ss':'África','sd':'África',
+  'tz':'África','tg':'África','tn':'África','ug':'África','zm':'África','zw':'África',
+  'eh':'África','re':'África','sh':'África','yt':'África',
+  'ar':'América do Sul','bo':'América do Sul','br':'América do Sul','cl':'América do Sul',
+  'co':'América do Sul','ec':'América do Sul','gy':'América do Sul','py':'América do Sul',
+  'pe':'América do Sul','sr':'América do Sul','uy':'América do Sul','ve':'América do Sul',
+  'gf':'América do Sul','fk':'América do Sul',
+  'ca':'América do Norte','us':'América do Norte','pm':'América do Norte','gl':'América do Norte',
+  'mx':'América Central','ag':'América Central','bs':'América Central','bb':'América Central',
+  'bz':'América Central','cr':'América Central','cu':'América Central','dm':'América Central',
+  'do':'América Central','sv':'América Central','gd':'América Central','gt':'América Central',
+  'ht':'América Central','hn':'América Central','jm':'América Central','ni':'América Central',
+  'pa':'América Central','kn':'América Central','lc':'América Central','vc':'América Central',
+  'tt':'América Central','ai':'América Central','aw':'América Central','ky':'América Central',
+  'cw':'América Central','mq':'América Central','ms':'América Central','pr':'América Central',
+  'tc':'América Central','vg':'América Central','vi':'América Central',
+  'al':'Europa','ad':'Europa','at':'Europa','by':'Europa','be':'Europa','ba':'Europa',
+  'bg':'Europa','hr':'Europa','cy':'Europa','cz':'Europa','dk':'Europa','ee':'Europa',
+  'fi':'Europa','fr':'Europa','de':'Europa','gr':'Europa','hu':'Europa','is':'Europa',
+  'ie':'Europa','it':'Europa','xk':'Europa','lv':'Europa','li':'Europa','lt':'Europa',
+  'lu':'Europa','mt':'Europa','md':'Europa','mc':'Europa','me':'Europa','nl':'Europa',
+  'mk':'Europa','no':'Europa','pl':'Europa','pt':'Europa','ro':'Europa','ru':'Europa',
+  'sm':'Europa','rs':'Europa','sk':'Europa','si':'Europa','es':'Europa','se':'Europa',
+  'ch':'Europa','ua':'Europa','gb':'Europa','va':'Europa','ax':'Europa','fo':'Europa',
+  'gi':'Europa','gg':'Europa','im':'Europa','je':'Europa','sj':'Europa',
+  'af':'Ásia','am':'Ásia','az':'Ásia','bh':'Ásia','bd':'Ásia','bt':'Ásia','bn':'Ásia',
+  'kh':'Ásia','cn':'Ásia','ge':'Ásia','in':'Ásia','id':'Ásia','ir':'Ásia','iq':'Ásia',
+  'il':'Ásia','jp':'Ásia','jo':'Ásia','kz':'Ásia','kw':'Ásia','kg':'Ásia','la':'Ásia',
+  'lb':'Ásia','mo':'Ásia','my':'Ásia','mv':'Ásia','mn':'Ásia','mm':'Ásia','np':'Ásia',
+  'kp':'Ásia','om':'Ásia','pk':'Ásia','ps':'Ásia','ph':'Ásia','qa':'Ásia','sa':'Ásia',
+  'sg':'Ásia','kr':'Ásia','lk':'Ásia','sy':'Ásia','tw':'Ásia','tj':'Ásia','th':'Ásia',
+  'tl':'Ásia','tr':'Ásia','tm':'Ásia','ae':'Ásia','uz':'Ásia','vn':'Ásia','ye':'Ásia','hk':'Ásia',
+  'au':'Oceania','fj':'Oceania','ki':'Oceania','mh':'Oceania','fm':'Oceania','nr':'Oceania',
+  'nz':'Oceania','pw':'Oceania','pg':'Oceania','ws':'Oceania','sb':'Oceania','to':'Oceania',
+  'tv':'Oceania','vu':'Oceania','ck':'Oceania','nu':'Oceania','pf':'Oceania','nc':'Oceania',
+};
+
+// Fallback por nome (para lugares antigos sem country_code)
 const CONT = {
-  // América do Sul
   'brasil':'América do Sul','brazil':'América do Sul','argentina':'América do Sul',
   'chile':'América do Sul','peru':'América do Sul','colombia':'América do Sul',
   'uruguai':'América do Sul','uruguay':'América do Sul','bolivia':'América do Sul',
-  'paraguai':'América do Sul','paraguay':'América do Sul','equador':'América do Sul',
-  'ecuador':'América do Sul','venezuela':'América do Sul','guiana':'América do Sul',
-  'guyana':'América do Sul','suriname':'América do Sul',
-  // América do Norte
-  'estados unidos':'América do Norte','united states':'América do Norte','usa':'América do Norte',
-  'canada':'América do Norte',
-  // América Central/Caribe
-  'mexico':'América Central','guatemala':'América Central','honduras':'América Central',
-  'el salvador':'América Central','nicaragua':'América Central','costa rica':'América Central',
-  'panama':'América Central','cuba':'América Central','jamaica':'América Central',
-  'haiti':'América Central','republica dominicana':'América Central',
-  'bahamas':'América Central','barbados':'América Central','trinidad':'América Central',
-  // Europa
-  'portugal':'Europa','espanha':'Europa','spain':'Europa',
-  'franca':'Europa','france':'Europa',
-  'italia':'Europa','italy':'Europa',
-  'alemanha':'Europa','germany':'Europa',
-  'reino unido':'Europa','united kingdom':'Europa','england':'Europa','scotland':'Europa','wales':'Europa',
-  'holanda':'Europa','netherlands':'Europa',
-  'belgica':'Europa','belgium':'Europa',
-  'suica':'Europa','switzerland':'Europa',
-  'austria':'Europa',
-  'grecia':'Europa','greece':'Europa',
-  'croacia':'Europa','croatia':'Europa',
-  'republica tcheca':'Europa','czech republic':'Europa',
-  'polonia':'Europa','poland':'Europa',
-  'hungria':'Europa','hungary':'Europa',
-  'romenia':'Europa','romania':'Europa',
-  'suecia':'Europa','sweden':'Europa',
-  'noruega':'Europa','norway':'Europa',
-  'dinamarca':'Europa','denmark':'Europa',
-  'finlandia':'Europa','finland':'Europa',
-  'irlanda':'Europa','ireland':'Europa',
-  'turquia':'Europa','turkey':'Europa',
-  'russia':'Europa','ucrania':'Europa','ukraine':'Europa',
-  'servia':'Europa','serbia':'Europa','eslovenia':'Europa','slovenia':'Europa',
-  'eslovaquia':'Europa','slovakia':'Europa','bulgaria':'Europa',
-  'albania':'Europa','macedonia':'Europa','montenegro':'Europa',
-  'luxemburgo':'Europa','luxembourg':'Europa',
-  'malta':'Europa','chipre':'Europa','cyprus':'Europa',
-  'estonia':'Europa','letonia':'Europa','latvia':'Europa','lituania':'Europa','lithuania':'Europa',
-  'islandia':'Europa','iceland':'Europa','monaco':'Europa','liechtenstein':'Europa',
-  // Ásia
-  'japao':'Ásia','japan':'Ásia',
-  'china':'Ásia',
-  'coreia do sul':'Ásia','south korea':'Ásia','coreia':'Ásia',
-  'tailandia':'Ásia','thailand':'Ásia',
-  'vietna':'Ásia','vietnam':'Ásia',
-  'indonesia':'Ásia',
-  'malasia':'Ásia','malaysia':'Ásia',
-  'singapura':'Ásia','singapore':'Ásia',
-  'india':'Ásia',
-  'nepal':'Ásia',
-  'filipinas':'Ásia','philippines':'Ásia',
-  'camboja':'Ásia','cambodia':'Ásia',
-  'emirados':'Ásia','united arab emirates':'Ásia','uae':'Ásia',
-  'qatar':'Ásia','israel':'Ásia',
-  'jordania':'Ásia','jordan':'Ásia',
-  'arabia saudita':'Ásia','saudi arabia':'Ásia',
-  'maldivas':'Ásia','maldives':'Ásia',
-  'sri lanka':'Ásia','birmania':'Ásia','myanmar':'Ásia',
-  'laos':'Ásia','mongolia':'Ásia',
-  'bangladesh':'Ásia','paquistao':'Ásia','pakistan':'Ásia',
-  'cazaquistao':'Ásia','uzbequistao':'Ásia',
-  'azerbaijao':'Ásia','azerbaijani':'Ásia',
-  'georgia':'Ásia','armenia':'Ásia',
-  'libano':'Ásia','lebanon':'Ásia',
-  'iraque':'Ásia','iraq':'Ásia','ira':'Ásia','iran':'Ásia',
-  'afeganistao':'Ásia','afghanistan':'Ásia',
-  'taiwan':'Ásia','hong kong':'Ásia','macau':'Ásia',
-  // África
-  'egito':'África','egypt':'África',
-  'marrocos':'África','morocco':'África',
-  'africa do sul':'África','south africa':'África',
-  'quenia':'África','kenya':'África',
-  'tanzania':'África',
-  'tunisia':'África',
-  'gana':'África','ghana':'África',
-  'nigeria':'África',
-  'etiopia':'África','ethiopia':'África',
-  'senegal':'África','namibia':'África','zimbabue':'África','zimbabwe':'África',
-  'uganda':'África','ruanda':'África','rwanda':'África',
-  'mocambique':'África','mozambique':'África',
-  'angola':'África','zambia':'África',
-  'mali':'África','burkina faso':'África','costa do marfim':'África',
-  'camaroes':'África','cameroon':'África',
-  'libia':'África','libya':'África',
-  'tunisia':'África','tunisia':'África',
-  'argelia':'África','algeria':'África',
-  // Oceania
-  'australia':'Oceania','nova zelandia':'Oceania','new zealand':'Oceania',
-  'fiji':'Oceania','papua nova guine':'Oceania','papua new guinea':'Oceania',
-  'vanuatu':'Oceania','samoa':'Oceania','tonga':'Oceania',
+  'paraguai':'América do Sul','ecuador':'América do Sul','venezuela':'América do Sul',
+  'estados unidos':'América do Norte','united states':'América do Norte','canada':'América do Norte',
+  'mexico':'América Central','cuba':'América Central','jamaica':'América Central',
+  'costa rica':'América Central','panama':'América Central','guatemala':'América Central',
+  'republica dominicana':'América Central','haiti':'América Central',
+  'portugal':'Europa','espanha':'Europa','spain':'Europa','franca':'Europa','france':'Europa',
+  'italia':'Europa','italy':'Europa','alemanha':'Europa','germany':'Europa',
+  'reino unido':'Europa','united kingdom':'Europa','holanda':'Europa','netherlands':'Europa',
+  'belgica':'Europa','belgium':'Europa','suica':'Europa','switzerland':'Europa',
+  'austria':'Europa','grecia':'Europa','greece':'Europa','croacia':'Europa','croatia':'Europa',
+  'polonia':'Europa','poland':'Europa','hungria':'Europa','suecia':'Europa','sweden':'Europa',
+  'noruega':'Europa','norway':'Europa','dinamarca':'Europa','denmark':'Europa',
+  'finlandia':'Europa','finland':'Europa','irlanda':'Europa','ireland':'Europa',
+  'turquia':'Europa','turkey':'Europa','russia':'Europa','ucrania':'Europa',
+  'japao':'Ásia','japan':'Ásia','china':'Ásia','coreia do sul':'Ásia','south korea':'Ásia',
+  'tailandia':'Ásia','thailand':'Ásia','vietna':'Ásia','vietnam':'Ásia',
+  'indonesia':'Ásia','malasia':'Ásia','malaysia':'Ásia','singapura':'Ásia','singapore':'Ásia',
+  'india':'Ásia','nepal':'Ásia','filipinas':'Ásia','philippines':'Ásia',
+  'camboja':'Ásia','cambodia':'Ásia','emirados':'Ásia','uae':'Ásia','qatar':'Ásia',
+  'israel':'Ásia','jordania':'Ásia','mongolia':'Ásia','myanmar':'Ásia','laos':'Ásia',
+  'egito':'África','egypt':'África','marrocos':'África','morocco':'África',
+  'africa do sul':'África','south africa':'África','quenia':'África','kenya':'África',
+  'tanzania':'África','gana':'África','ghana':'África','nigeria':'África',
+  'etiopia':'África','ethiopia':'África','zimbabue':'África','zimbabwe':'África',
+  'namibia':'África','angola':'África','zambia':'África','botswana':'África','botsuana':'África',
+  'mozambique':'África','ruanda':'África','rwanda':'África','uganda':'África',
+  'australia':'Oceania','nova zelandia':'Oceania','new zealand':'Oceania','fiji':'Oceania',
 };
 
 // Remove acentos para comparação
@@ -817,7 +800,13 @@ function norm(s) {
   return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 
-function guessContinent(country) {
+function guessContinent(country, countryCode) {
+  // 1. Código ISO é o mais confiável (cobre todos os países)
+  if (countryCode) {
+    const c = CONT_CODE[countryCode.toLowerCase()];
+    if (c) return c;
+  }
+  // 2. Fallback por nome (lugares antigos sem country_code)
   if (!country) return '';
   const k = norm(country);
   for (const [n, c] of Object.entries(CONT)) {
@@ -1030,10 +1019,10 @@ function updateCross() {
   const e2 = [...c2].filter(c=>!c1.has(c)).length;
 
   document.getElementById('xs-c').textContent  = common;
-  document.getElementById('xs-n1').textContent = e1;
-  document.getElementById('xs-n2').textContent = e2;
-  document.getElementById('xs-l1').textContent = 'só ' + n1;
-  document.getElementById('xs-l2').textContent = 'só ' + n2;
+  document.getElementById('xs-n1').textContent = c1.size;
+  document.getElementById('xs-n2').textContent = c2.size;
+  document.getElementById('xs-l1').textContent = 'países ' + n1;
+  document.getElementById('xs-l2').textContent = 'países ' + n2;
   el.classList.add('vis');
 }
 
@@ -1106,6 +1095,36 @@ auth.onAuthStateChanged(user => {
 // STATS MODAL
 // ═══════════════════════════════════════════════════════════════
 let statsView = 'all'; // visão própria do modal de stats
+let drillYear = null;
+let drillCat  = null;
+let drillCont = null;
+
+function toggleDrill(section, key) {
+  if (section==='year') drillYear = drillYear===key ? null : key;
+  if (section==='cat')  drillCat  = drillCat ===key ? null : key;
+  if (section==='cont') drillCont = drillCont ===key ? null : key;
+  renderStats();
+}
+
+function placeListHTML(places) {
+  if (!places.length) return '<div style="padding:10px;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted)">Nenhum lugar</div>';
+  const ICONS = {cidade:'🏙',ponto:'🏛',hardrock:'🎸',praia:'🏖',natureza:'🏔',restaurante:'🍽',outro:'📌'};
+  const rows = places.slice(0,60).map(p => {
+    const yrs = p.years?.length ? p.years.join(', ') : (p.year||'');
+    const ic  = ICONS[p.category]||'📌';
+    const loc = [p.city&&p.city!==p.name?p.city:null, p.country].filter(Boolean).join(' · ');
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;flex-shrink:0">${ic}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        ${loc?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">${loc}</div>`:''}
+      </div>
+      ${yrs?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;padding-left:6px">${yrs}</span>`:''}
+    </div>`;
+  });
+  if (places.length>60) rows.push(`<div style="padding:8px 10px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">+${places.length-60} lugares</div>`);
+  return rows.join('');
+}
 
 function openStats() {
   document.getElementById('stats-modal').classList.add('open');
@@ -1142,7 +1161,7 @@ function renderStats() {
   }
 
   const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
-  const continents = new Set(vis.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
+  const continents = new Set(vis.map(p=>p.continent||guessContinent(p.country,p.countryCode)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km         = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
 
@@ -1198,8 +1217,8 @@ function renderStats() {
     const unique1 = [...c1].filter(c=>!c2.has(c));
     const unique2 = [...c2].filter(c=>!c1.has(c));
 
-    const cont1 = new Set(u1p.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
-    const cont2 = new Set(u2p.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
+    const cont1 = new Set(u1p.map(p=>p.continent||guessContinent(p.country,p.countryCode)).filter(Boolean));
+    const cont2 = new Set(u2p.map(p=>p.continent||guessContinent(p.country,p.countryCode)).filter(Boolean));
     const commonCont = [...cont1].filter(c=>cont2.has(c));
 
     const yr1=new Set(); u1p.forEach(p=>(p.years||[p.year]).filter(Boolean).forEach(y=>yr1.add(y)));
@@ -1290,24 +1309,64 @@ function renderStats() {
     ${sortedYears.length||semData?`<hr class="sdivider">
     <div>
       <div class="sblock-title">Por ano</div>
-      ${sortedYears.map(y=>`<div class="bar-row"><div class="bar-label">${y}</div><div class="bar-track"><div class="bar-fill" style="width:${(yearCount[y]/maxYC*100).toFixed(0)}%;background:var(--blue)"></div></div><div class="bar-count">${yearCount[y]}</div></div>`).join('')}
+      ${sortedYears.map(y=>{
+        const key  = String(y);
+        const open = drillYear === key;
+        const yp   = vis.filter(p=>(p.years?.length?p.years:[p.year]).includes(y));
+        return `<div>
+          <div class="bar-row" onclick="toggleDrill('year','${key}')" style="cursor:pointer">
+            <div class="bar-label">${y}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(yearCount[y]/maxYC*100).toFixed(0)}%;background:var(--blue)"></div></div>
+            <div class="bar-count">${yearCount[y]}</div>
+            <span style="margin-left:6px;color:var(--muted2);font-size:10px">${open?'▲':'▼'}</span>
+          </div>
+          ${open?`<div class="drill-panel">${placeListHTML(yp)}</div>`:''}
+        </div>`;
+      }).join('')}
       ${semData?`<div class="bar-row"><div class="bar-label" style="color:var(--muted)">sem data</div><div class="bar-track"><div class="bar-fill" style="width:${(semData/maxYC*100).toFixed(0)}%;background:var(--muted)"></div></div><div class="bar-count" style="color:var(--muted)">${semData}</div></div>`:''}
     </div>`:''}
 
     <hr class="sdivider">
     <div>
       <div class="sblock-title">Por categoria</div>
-      ${Object.entries(CAT_NAMES).filter(([k])=>catCount[k]).sort((a,b)=>(catCount[b[0]]||0)-(catCount[a[0]]||0)).map(([k,lbl])=>`<div class="bar-row"><div class="bar-label">${lbl}</div><div class="bar-track"><div class="bar-fill" style="width:${((catCount[k]||0)/maxCat*100).toFixed(0)}%;background:${CAT_COLORS[k]||'#888'}"></div></div><div class="bar-count">${catCount[k]||0}</div></div>`).join('')}
+      ${Object.entries(CAT_NAMES).filter(([k])=>catCount[k]).sort((a,b)=>(catCount[b[0]]||0)-(catCount[a[0]]||0)).map(([k,lbl])=>{
+        const open = drillCat === k;
+        const cp   = vis.filter(p=>(p.category||'outro')===k);
+        return `<div>
+          <div class="bar-row" onclick="toggleDrill('cat','${k}')" style="cursor:pointer">
+            <div class="bar-label">${lbl}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${((catCount[k]||0)/maxCat*100).toFixed(0)}%;background:${CAT_COLORS[k]||'#888'}"></div></div>
+            <div class="bar-count">${catCount[k]||0}</div>
+            <span style="margin-left:6px;color:var(--muted2);font-size:10px">${open?'▲':'▼'}</span>
+          </div>
+          ${open?`<div class="drill-panel">${placeListHTML(cp)}</div>`:''}
+        </div>`;
+      }).join('')}
     </div>
 
     <hr class="sdivider">
     <div>
       <div class="sblock-title">Por continente · países</div>
-      ${Object.entries(contCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
-        <div style="margin-bottom:.75rem">
-          <div class="bar-row"><div class="bar-label">${c}</div><div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${contColors[c]||'#888'}"></div></div><div class="bar-count">${n}</div></div>
-          ${byContinent[c]?`<div class="country-tags">${[...byContinent[c]].map(co=>`<span class="country-tag" style="border-color:${contColors[c]||'#888'}44;color:${contColors[c]||'#888'}">${co}</span>`).join('')}</div>`:''}
-        </div>`).join('')}
+      ${Object.entries(contCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>{
+        const open  = drillCont === c;
+        const allC  = byContinent[c] ? [...byContinent[c]].sort() : [];
+        const vis7  = allC.slice(0,7);
+        const more  = allC.length - 7;
+        const cp    = vis.filter(p=>(p.continent||guessContinent(p.country,p.countryCode))===c);
+        return `<div style="margin-bottom:${open?'0':'.5rem'}">
+          <div class="bar-row" onclick="toggleDrill('cont','${c}')" style="cursor:pointer">
+            <div class="bar-label">${c}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${contColors[c]||'#888'}"></div></div>
+            <div class="bar-count">${n}</div>
+            <span style="margin-left:6px;color:var(--muted2);font-size:10px">${open?'▲':'▼'}</span>
+          </div>
+          <div class="country-tags" style="margin-bottom:${open?'4px':'.75rem'}">
+            ${vis7.map(co=>`<span class="country-tag" style="border-color:${contColors[c]||'#888'}44;color:${contColors[c]||'#888'}">${co}</span>`).join('')}
+            ${more>0?`<span class="country-tag" style="color:var(--muted2);border-color:var(--border2)">+${more}</span>`:''}
+          </div>
+          ${open?`<div class="drill-panel" style="margin-bottom:.75rem">${placeListHTML(cp)}</div>`:''}
+        </div>`;
+      }).join('')}
     </div>
 
     ${crossHTML}
@@ -1393,12 +1452,13 @@ function pickGeo(i) {
   const name    = ptName || r.display_name.split(',')[0].trim();
   const city    = addr.city || addr.town || addr.village || addr.municipality || name;
   const country = addr.country || r.display_name.split(',').slice(-1)[0].trim();
+  const countryCode = (addr.country_code || '').toLowerCase();
 
-  pending = { lat: parseFloat(r.lat), lng: parseFloat(r.lon), name, city, country };
+  pending = { lat: parseFloat(r.lat), lng: parseFloat(r.lon), name, city, country, countryCode };
 
   // fill form
   document.getElementById('f-country').value = country;
-  const cont = guessContinent(country);
+  const cont = guessContinent(country, countryCode);
   if (cont) document.getElementById('f-cont').value = cont;
 
   // preview
@@ -1496,6 +1556,7 @@ async function savePlace() {
     name:      pending.name,
     city:      pending.city,
     country:   document.getElementById('f-country').value.trim(),
+    countryCode: pending.countryCode || '',
     continent: document.getElementById('f-cont').value,
     category:  document.getElementById('f-cat').value,
     years:     document.getElementById('f-year').value.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900),
@@ -1704,7 +1765,8 @@ async function reverseGeocode(lat, lng) {
       || '';
 
     const country = addr.country || '';
-    const cont    = guessContinent(country);
+    const countryCode = (addr.country_code || '').toLowerCase();
+    const cont    = guessContinent(country, countryCode);
 
     // Fallback do display_name: pula partes numéricas e muito curtas
     const fallback = (d.display_name || '').split(',')
@@ -1716,7 +1778,7 @@ async function reverseGeocode(lat, lng) {
     openPanel(); // reseta o form
 
     // preenche após o reset
-    pending = { lat, lng, name, city, country };
+    pending = { lat, lng, name, city, country, countryCode };
     document.getElementById('si').value          = name;
     document.getElementById('f-country').value   = country;
     if (cont) document.getElementById('f-cont').value = cont;
