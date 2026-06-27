@@ -451,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v44</div>
+<div id="ver">v48</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -576,6 +576,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 <div id="empty">
   <div class="etitle">Nenhum lugar ainda</div>
   <div class="esub">Clique com o botão direito no mapa para adicionar</div>
+  <button id="reload-btn" onclick="reloadPlaces()" style="display:none;margin-top:1rem;padding:8px 20px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted2);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer">↻ Recarregar dados</button>
 </div>
 
 <!-- PANEL -->
@@ -800,6 +801,11 @@ function norm(s) {
   return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 
+// Chave única por país: usa ISO code quando disponível, senão nome normalizado
+function countryKey(p) {
+  return p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+}
+
 function guessContinent(country, countryCode) {
   // 1. Código ISO é o mais confiável (cobre todos os países)
   if (countryCode) {
@@ -992,8 +998,12 @@ function hav(la1, lo1, la2, lo2) {
 }
 
 function updateStats(vis) {
-  const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
-  const continents = new Set(vis.map(p=>p.continent || guessContinent(p.country)).filter(Boolean));
+  // Conta países de TODOS os places da view (ignora filtro de categoria)
+  const visAll = view==='all' ? places
+    : view==='u1' ? places.filter(p=>p.userId===uids[0])
+    : places.filter(p=>p.userId===uids[1]);
+  const countries  = new Set(visAll.map(countryKey).filter(Boolean));
+  const continents = new Set(visAll.map(p=>p.continent || guessContinent(p.country,p.countryCode)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
 
@@ -1095,35 +1105,36 @@ auth.onAuthStateChanged(user => {
 // STATS MODAL
 // ═══════════════════════════════════════════════════════════════
 let statsView = 'all'; // visão própria do modal de stats
-let drillYear = null;
-let drillCat  = null;
-let drillCont = null;
+let drillYear    = null;
+let drillCat     = null;
+let drillCont    = null;
+let drillCountry = null; // 'continent:country'
 
 function toggleDrill(section, key) {
-  if (section==='year') drillYear = drillYear===key ? null : key;
-  if (section==='cat')  drillCat  = drillCat ===key ? null : key;
-  if (section==='cont') drillCont = drillCont ===key ? null : key;
+  if (section==='year')    { drillYear    = drillYear    ===key ? null : key; }
+  if (section==='cat')     { drillCat     = drillCat     ===key ? null : key; }
+  if (section==='cont')    { drillCont    = drillCont    ===key ? null : key; drillCountry = null; }
+  if (section==='country') { drillCountry = drillCountry ===key ? null : key; }
   renderStats();
 }
 
 function placeListHTML(places) {
-  if (!places.length) return '<div style="padding:10px;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted)">Nenhum lugar</div>';
-  const ICONS = {cidade:'🏙',ponto:'🏛',hardrock:'🎸',praia:'🏖',natureza:'🏔',restaurante:'🍽',outro:'📌'};
-  const rows = places.slice(0,60).map(p => {
+  if (!places.length) return `<div style="padding:10px 14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">Sem lugares</div>`;
+  return [...places].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(p => {
     const yrs = p.years?.length ? p.years.join(', ') : (p.year||'');
-    const ic  = ICONS[p.category]||'📌';
-    const loc = [p.city&&p.city!==p.name?p.city:null, p.country].filter(Boolean).join(' · ');
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;flex-shrink:0">${ic}</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-        ${loc?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">${loc}</div>`:''}
+    const city = p.city && p.city !== p.name ? p.city : '';
+    const col  = CAT_COLORS[p.category||'outro'] || '#888';
+    return `<div style="display:flex;align-items:stretch;border-bottom:1px solid var(--border)">
+      <div style="width:3px;background:${col};flex-shrink:0;border-radius:0"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;flex:1;min-width:0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          ${city?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">${city}</div>`:''}
+        </div>
+        ${yrs?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;flex-shrink:0">${yrs}</span>`:''}
       </div>
-      ${yrs?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;padding-left:6px">${yrs}</span>`:''}
     </div>`;
-  });
-  if (places.length>60) rows.push(`<div style="padding:8px 10px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">+${places.length-60} lugares</div>`);
-  return rows.join('');
+  }).join('');
 }
 
 function openStats() {
@@ -1160,7 +1171,7 @@ function renderStats() {
     return;
   }
 
-  const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
+  const countries  = new Set(vis.map(countryKey).filter(Boolean));
   const continents = new Set(vis.map(p=>p.continent||guessContinent(p.country,p.countryCode)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km         = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
@@ -1346,29 +1357,43 @@ function renderStats() {
 
     <hr class="sdivider">
     <div>
-      <div class="sblock-title">Por continente · países</div>
-      ${Object.entries(contCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>{
-        const open  = drillCont === c;
-        const allC  = byContinent[c] ? [...byContinent[c]].sort() : [];
-        const vis7  = allC.slice(0,7);
-        const more  = allC.length - 7;
-        const cp    = vis.filter(p=>(p.continent||guessContinent(p.country,p.countryCode))===c);
-        return `<div style="margin-bottom:${open?'0':'.5rem'}">
-          <div class="bar-row" onclick="toggleDrill('cont','${c}')" style="cursor:pointer">
-            <div class="bar-label">${c}</div>
-            <div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${contColors[c]||'#888'}"></div></div>
+      <div class="sblock-title">Por continente</div>
+      ${Object.entries(contCount).sort((a,b)=>b[1]-a[1]).map(([ct,n])=>{
+        const open = drillCont === ct;
+        const col  = contColors[ct]||'#888';
+        const cp   = vis.filter(p=>(p.continent||guessContinent(p.country,p.countryCode))===ct);
+        const byCo = {};
+        cp.forEach(p=>{ const co=p.country||'?'; byCo[co]=(byCo[co]||0)+1; });
+        const sortedCo = Object.entries(byCo).sort((a,b)=>b[1]-a[1]);
+
+        const countriesHTML = !open ? '' : sortedCo.map(([country,cnt])=>{
+          const ck    = ct + '::' + country;
+          const cOpen = drillCountry === ck;
+          const cpl   = cp.filter(p=>p.country===country);
+          const arr   = cOpen ? '▲' : '▶';
+          const bg    = cOpen ? 'var(--bg2)' : 'transparent';
+          const inner = cOpen ? `<div style="margin:2px 0 6px 13px;background:var(--bg3);border-radius:8px;overflow:hidden">${placeListHTML(cpl)}</div>` : '';
+          return `<div style="margin-bottom:1px">
+            <div onclick="toggleDrill('country',decodeURIComponent('${encodeURIComponent(ck)}'))" style="display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:6px;background:${bg}">
+              <div style="width:5px;height:5px;border-radius:50%;background:${col};flex-shrink:0"></div>
+              <span style="flex:1;font-size:.82rem;color:var(--text)">${country}</span>
+              <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${cnt}</span>
+              <span style="font-size:9px;color:var(--muted2);margin-left:6px">${arr}</span>
+            </div>
+            ${inner}
+          </div>`;
+        }).join('');
+
+        return `<div style="margin-bottom:2px">
+          <div class="bar-row" onclick="toggleDrill('cont',decodeURIComponent('${encodeURIComponent(ct)}'))" style="cursor:pointer;border-radius:6px;padding:4px 6px;${open?'background:var(--bg3)':''}">
+            <div class="bar-label" style="${open?'color:'+col:''}">${ct}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${col}"></div></div>
             <div class="bar-count">${n}</div>
             <span style="margin-left:6px;color:var(--muted2);font-size:10px">${open?'▲':'▼'}</span>
           </div>
-          <div class="country-tags" style="margin-bottom:${open?'4px':'.75rem'}">
-            ${vis7.map(co=>`<span class="country-tag" style="border-color:${contColors[c]||'#888'}44;color:${contColors[c]||'#888'}">${co}</span>`).join('')}
-            ${more>0?`<span class="country-tag" style="color:var(--muted2);border-color:var(--border2)">+${more}</span>`:''}
-          </div>
-          ${open?`<div class="drill-panel" style="margin-bottom:.75rem">${placeListHTML(cp)}</div>`:''}
+          ${open ? '<div style="margin:4px 0 10px 8px">' + countriesHTML + '</div>' : ''}
         </div>`;
       }).join('')}
-    </div>
-
     ${crossHTML}
   `;
 }
@@ -1376,25 +1401,52 @@ function renderStats() {
 // ═══════════════════════════════════════════════════════════════
 // FIRESTORE
 // ═══════════════════════════════════════════════════════════════
-db.collection('places').orderBy('timestamp','desc').onSnapshot(snap => {
-  places = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+let firestoreUnsubscribe = null;
+let loadingHidden = false;
 
-  // Build ordered uids list
-  const seen = new Set();
-  uids = [];
-  places.forEach(p => { if (!seen.has(p.userId)) { seen.add(p.userId); uids.push(p.userId); }});
-
-  renderMap();
-  refreshLabels();
-
-  // Hide loading
+function hideLoading() {
+  if (loadingHidden) return;
+  loadingHidden = true;
   const l = document.getElementById('loading');
-  l.classList.add('gone');
-  setTimeout(() => l.remove(), 500);
-}, err => {
-  console.error(err);
-  document.getElementById('loading').textContent = 'Erro: ' + err.message;
-});
+  if (l) { l.classList.add('gone'); setTimeout(() => l.remove(), 500); }
+}
+
+function startFirestoreListener() {
+  if (firestoreUnsubscribe) firestoreUnsubscribe();
+  firestoreUnsubscribe = db.collection('places').orderBy('timestamp','desc').onSnapshot(snap => {
+    places = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // Ordem fixa por email: Sérgio = u1, Andréa = u2
+    const EMAIL_ORDER = ['svazfernandes@gmail.com', 'andreabalieiro@gmail.com'];
+    const emailByUid  = {};
+    places.forEach(p => { if (p.userId && p.userEmail) emailByUid[p.userId] = p.userEmail; });
+    const allUids = [...new Set(places.map(p=>p.userId).filter(Boolean))];
+    allUids.sort((a, b) => {
+      const ia = EMAIL_ORDER.indexOf(emailByUid[a]||'');
+      const ib = EMAIL_ORDER.indexOf(emailByUid[b]||'');
+      return (ia===-1?999:ia) - (ib===-1?999:ib);
+    });
+    uids = allUids;
+    renderMap();
+    refreshLabels();
+    hideLoading();
+    const rb = document.getElementById('reload-btn');
+    if (rb) rb.style.display = 'none';
+  }, err => {
+    console.error('Firestore error:', err);
+    hideLoading();
+    const rb = document.getElementById('reload-btn');
+    if (rb) rb.style.display = 'block';
+  });
+}
+
+function reloadPlaces() {
+  const rb = document.getElementById('reload-btn');
+  if (rb) rb.style.display = 'none';
+  startFirestoreListener();
+}
+
+startFirestoreListener();
 
 // ═══════════════════════════════════════════════════════════════
 // DELETE
