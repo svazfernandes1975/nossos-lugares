@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nossos Lugares · Andrea & Sergio</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--bg2:#0c1018;--bg3:#121824;
+  --border:#1a2236;--border2:#1f2d47;
+  --text:#dde4f0;--muted:#3a4d6a;--muted2:#6278a0;
+  --amber:#e8a93c;--blue:#60a5fa;--green:#4ade80;--coral:#fb7185;
+  --u1:#f97316;--u2:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
+
+/* ── MAP ── */
+#map{position:fixed;inset:0;z-index:1}
+.leaflet-control-attribution{background:rgba(7,9,15,.8)!important;color:#3a4d6a!important;font-size:9px!important}
+.leaflet-control-attribution a{color:#3a4d6a!important}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(7,9,15,.94);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);
+  padding:.75rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;flex-wrap:nowrap;
+  box-shadow:0 1px 24px rgba(0,0,0,.5);
+}
+.brand{font-weight:800;font-size:1rem;white-space:nowrap;letter-spacing:-.02em}
+.brand em{color:var(--amber);font-style:normal}
+.brand span{color:var(--muted2);font-weight:400;font-size:.8rem;margin-left:2px;font-family:'DM Mono',monospace}
+
+.vtoggle{
+  display:flex;gap:2px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:3px;
+  flex-shrink:0;
+}
+.vbtn{
+  font-family:'DM Mono',monospace;font-size:10px;padding:4px 11px;
+  border-radius:16px;border:none;background:transparent;color:var(--muted2);
+  cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:.02em;
+}
+.vbtn:hover{color:var(--text)}
+.vbtn.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.vbtn.on.vu1{color:var(--u1)}
+.vbtn.on.vu2{color:var(--u2)}
+
+.statsbar{display:flex;gap:1.25rem;flex:1;align-items:center;flex-wrap:nowrap}
+.sitem{display:flex;flex-direction:column;align-items:center;min-width:40px}
+.sval{font-family:'DM Mono',monospace;font-size:1.05rem;font-weight:700;line-height:1}
+.slbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+.autharea{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+#uavatar{width:26px;height:26px;border-radius:50%;border:2px solid var(--u1);display:none}
+#authbtn{
+  font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
+  border-radius:20px;border:1px solid var(--border2);background:var(--bg3);
+  color:var(--muted2);cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+#authbtn:hover{border-color:var(--amber);color:var(--amber)}
+#authbtn.in{border-color:var(--green);color:var(--green)}
+
+/* ── FAB ── */
+#fab{
+  position:fixed;bottom:5.5rem;right:2rem;z-index:200;
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--amber),#c8891a);
+  color:#000;border:none;font-size:1.4rem;font-weight:800;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(232,169,60,.3),0 2px 8px rgba(0,0,0,.6);
+  transition:transform .2s,box-shadow .2s;
+}
+#fab:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 8px 32px rgba(232,169,60,.5),0 2px 8px rgba(0,0,0,.6)}
+#fab.vis{display:flex}
+
+/* ── CROSS STATS ── */
+#xstats{
+  position:fixed;bottom:2rem;left:1.5rem;z-index:100;
+  background:rgba(7,9,15,.92);backdrop-filter:blur(16px);
+  border:1px solid var(--border2);border-radius:12px;
+  padding:.55rem 1rem;
+  display:none;gap:1.25rem;
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+}
+#xstats.vis{display:flex}
+#xstats strong{color:var(--text)}
+
+/* ── PANEL ── */
+#panel{
+  position:fixed;top:0;right:-420px;width:400px;height:100vh;z-index:300;
+  background:var(--bg2);border-left:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  transition:right .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 32px rgba(0,0,0,.5);
+}
+#panel.open{right:0}
+
+.ph{
+  padding:1.15rem 1.5rem;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:var(--bg3);
+}
+.pt{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.pc{background:none;border:none;color:var(--muted2);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s,background .15s}
+.pc:hover{color:var(--text);background:var(--border2)}
+
+.pb{flex:1;overflow-y:auto;padding:1.15rem 1.5rem;display:flex;flex-direction:column;gap:.9rem}
+.pb::-webkit-scrollbar{width:3px}
+.pb::-webkit-scrollbar-track{background:transparent}
+.pb::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* form */
+.flbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.fg{display:flex;flex-direction:column}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+.fi,.fs,.fta{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
+  padding:.55rem .85rem;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;
+  outline:none;transition:border-color .15s;
+}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--amber)}
+.fi::placeholder,.fta::placeholder{color:var(--muted)}
+.fs{cursor:pointer;appearance:none}
+.fta{resize:vertical;min-height:72px}
+
+/* geo results */
+#gres{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;overflow:hidden;display:none;margin-top:4px}
+.gr{padding:.55rem .85rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s,color .1s}
+.gr:last-child{border-bottom:none}
+.gr:hover{background:var(--border);color:var(--text)}
+.gr strong{color:var(--text);display:block;font-size:12px;margin-bottom:1px}
+
+/* location preview */
+#lprev{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:.65rem .9rem;display:none}
+.ln{font-size:.88rem;font-weight:700;margin-bottom:2px}
+.lm{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)}
+
+/* buttons */
+.bsave{
+  width:100%;background:var(--amber);color:#000;border:none;border-radius:8px;
+  padding:.7rem;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s;
+}
+.bsave:hover{opacity:.9}
+.bsave:disabled{opacity:.35;cursor:default}
+.bcancel{
+  width:100%;background:none;color:var(--muted2);border:1px solid var(--border2);
+  border-radius:8px;padding:.6rem;font-family:'DM Mono',monospace;font-size:11px;
+  cursor:pointer;transition:all .15s;
+}
+.bcancel:hover{border-color:var(--coral);color:var(--coral)}
+
+/* ── POPUP ── */
+.leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--border2)!important;border-radius:12px!important;box-shadow:0 4px 24px rgba(0,0,0,.6)!important;color:var(--text)!important;padding:0!important}
+.leaflet-popup-content{margin:0!important;width:auto!important}
+.leaflet-popup-tip-container{display:none}
+.pbox{padding:16px 18px}
+.pname{font-size:1.05rem;font-weight:800;margin-bottom:2px;line-height:1.2}
+.pmeta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);line-height:1.7}
+.puser{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:1px 8px;border-radius:20px;margin-top:6px}
+.pdel{display:block;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--coral);background:none;border:1px solid #5a1a1a;border-radius:6px;padding:3px 10px;cursor:pointer;width:100%;text-align:left;transition:background .15s}
+.pdel:hover{background:#1f0a0a}
+
+/* ── MARKER ── */
+.leaflet-div-icon{background:transparent!important;border:none!important;box-shadow:none!important}
+.mk{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.25);font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s}
+.mk:hover{transform:scale(1.15)}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(60px);
+  z-index:500;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  padding:.6rem 1.2rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+  transition:transform .3s;white-space:nowrap;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── LOADING ── */
+#loading{
+  position:fixed;inset:0;z-index:1000;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:.1em;
+  transition:opacity .4s;
+}
+#loading.gone{opacity:0;pointer-events:none}
+
+/* ── EMPTY STATE ── */
+#empty{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;
+  text-align:center;pointer-events:none;display:none;
+}
+#empty.vis{display:block}
+.etitle{font-size:1.1rem;font-weight:700;color:var(--muted2);margin-bottom:.4rem}
+.esub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ── LEGENDA / FILTRO ── */
+#legend{
+  position:fixed;top:5rem;left:1rem;z-index:100;
+  background:rgba(7,9,15,.92);backdrop-filter:blur(16px);
+  border:1px solid var(--border2);border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  min-width:140px;
+}
+#leg-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem .75rem;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
+  user-select:none;transition:color .15s;
+}
+#leg-head:hover{color:var(--text)}
+#leg-head span{font-size:9px;color:var(--muted);margin-left:4px;letter-spacing:.05em}
+#leg-items{display:flex;flex-direction:column}
+.leg-item{
+  display:flex;align-items:center;gap:8px;
+  padding:.35rem .75rem;
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
+  cursor:pointer;transition:background .12s,color .12s;
+  user-select:none;
+  border-bottom:1px solid var(--border);
+}
+.leg-item:last-child{border-bottom:none}
+.leg-item:hover{background:var(--bg3);color:var(--text)}
+.leg-item.active{color:var(--text)}
+.leg-item.inactive{opacity:.35}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+
+/* ── STATS MODAL ── */
+#stats-modal{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+#stats-modal.open{display:flex}
+.smodal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+  width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+}
+.smodal::-webkit-scrollbar{width:3px}
+.smodal::-webkit-scrollbar-track{background:transparent}
+.smodal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.smodal-h{
+  padding:1.15rem 1.5rem;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+  backdrop-filter:blur(8px);
+}
+.smodal-title{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.svbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:14px;border:none;background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.svbtn:hover{color:var(--text)}
+.svbtn.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.smodal-body{padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1.5rem}
+.sblock-title{
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:.75rem;
+}
+.conq-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.conq-item{background:var(--bg3);border-radius:8px;padding:.65rem .9rem}
+.conq-val{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:700;line-height:1}
+.conq-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.country-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.country-tag{font-family:'DM Mono',monospace;font-size:9px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:2px 8px;color:var(--muted2)}
+.sdivider{border:none;border-top:1px solid var(--border);margin:.25rem 0}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem}
+
+.sg-item{background:var(--bg3);border-radius:10px;padding:.75rem;text-align:center}
+.sg-val{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:800;line-height:1}
+.sg-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+.bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem}
+.bar-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);min-width:110px;text-align:right}
+.bar-track{flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);min-width:20px}
+.user-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center}
+.uc-col{display:flex;flex-direction:column;gap:.4rem}
+.uc-item{font-family:'DM Mono',monospace;font-size:11px;padding:.3rem .6rem;border-radius:6px}
+.uc-div{display:flex;flex-direction:column;gap:.4rem;align-items:center}
+.uc-div-item{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:center}
+.uc-common{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--green)}
+
+/* ── THEME POPOVER ── */
+#theme-btn{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);
+  background:transparent;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,transform .15s;flex-shrink:0;
+}
+#theme-btn:hover{border-color:var(--amber);transform:rotate(30deg)}
+#theme-dot{width:12px;height:12px;border-radius:50%;background:var(--amber);pointer-events:none;transition:background .3s}
+#theme-pop{
+  position:fixed;top:4rem;right:1rem;z-index:500;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  padding:1rem 1.1rem;
+  display:none;flex-direction:column;gap:.9rem;
+  box-shadow:0 8px 40px rgba(0,0,0,.7);
+  min-width:190px;
+}
+#theme-pop.open{display:flex}
+.tp-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
+.tp-row{display:flex;gap:6px;flex-wrap:wrap}
+.tp-swatch{
+  width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  transition:transform .15s,border-color .15s;flex-shrink:0;
+}
+.tp-swatch:hover{transform:scale(1.15)}
+.tp-swatch.active{border-color:rgba(255,255,255,.7)}
+
+.tp-map-row{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.tp-map-btn{
+  font-family:'DM Mono',monospace;font-size:9px;
+  padding:5px 8px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--muted2);cursor:pointer;
+  transition:all .15s;text-align:center;
+}
+.tp-map-btn:hover{color:var(--text);border-color:var(--muted2)}
+.tp-map-btn.active{border-color:var(--amber);color:var(--amber);background:var(--bg2)}
+
+/* ── VERSION ── */
+#ver{
+  position:fixed;bottom:.5rem;left:50%;transform:translateX(-50%);z-index:50;
+  font-family:'DM Mono',monospace;font-size:9px;color:#2a2a2a;letter-spacing:.08em;
+  pointer-events:none;user-select:none;
+}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  /* topbar em 2 linhas */
+  #topbar{
+    padding:.6rem 1rem .3rem;
+    gap:.5rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .brand{font-size:.85rem;flex:1}
+  .vtoggle{flex-shrink:1}
+  .vbtn{font-size:9px;padding:3px 8px}
+
+  /* stats vira segunda linha do topbar */
+  .statsbar{
+    width:100%;
+    justify-content:space-around;
+    gap:0;
+    padding:.35rem 0 .15rem;
+    border-top:1px solid var(--border);
+    flex:none;
+  }
+  .sval{font-size:.9rem}
+  .slbl{font-size:8px}
+
+  /* panel sobe de baixo */
+  #panel{
+    width:100%;right:0;
+    border-left:none;border-top:1px solid var(--border2);
+    height:88vh;top:auto;bottom:-100vh;
+    border-radius:16px 16px 0 0;
+    transition:bottom .3s cubic-bezier(.4,0,.2,1);
+  }
+  #panel.open{bottom:0}
+
+  /* fab */
+  #fab{bottom:5rem;right:1.25rem;width:46px;height:46px;font-size:1.3rem}
+
+  /* cross stats e legenda: esconde no mobile */
+  #xstats{display:none!important}
+  #legend{display:none!important}
+
+  /* zoom control */
+  .leaflet-bottom.leaflet-right{bottom:5rem!important}
+}
+</style>
+</head>
+<body>
+
+<div id="loading">carregando mapa...</div>
+
+<!-- STATS MODAL -->
+<div id="stats-modal" onclick="if(event.target===this)closeStats()">
+  <div class="smodal">
+    <div class="smodal-h">
+      <span class="smodal-title">Estatísticas</span>
+      <div style="display:flex;gap:3px;background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:2px">
+        <button class="svbtn on" id="svb-all" onclick="setStatsView('all',this)">Todos</button>
+        <button class="svbtn" id="svb-u1" onclick="setStatsView('u1',this)">—</button>
+        <button class="svbtn" id="svb-u2" onclick="setStatsView('u2',this)">—</button>
+      </div>
+      <button class="pc" onclick="closeStats()">✕</button>
+    </div>
+    <div class="smodal-body" id="stats-body">
+      <div style="text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;padding:2rem">calculando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGENDA / FILTRO -->
+<div id="legend">
+  <div id="leg-head" onclick="toggleLegend()">
+    Filtrar por tipo<span id="leg-arrow">▲</span>
+  </div>
+  <div id="leg-items">
+    <div class="leg-item active" data-cat="cidade"       onclick="toggleCat('cidade')"><span class="leg-dot" style="background:#e8e8e8"></span>Cidade</div>
+    <div class="leg-item active" data-cat="ponto"        onclick="toggleCat('ponto')"><span class="leg-dot" style="background:#fbbf24"></span>Ponto Turístico</div>
+    <div class="leg-item active" data-cat="hardrock"     onclick="toggleCat('hardrock')"><span class="leg-dot" style="background:#ef4444"></span>Hard Rock</div>
+    <div class="leg-item active" data-cat="praia"        onclick="toggleCat('praia')"><span class="leg-dot" style="background:#22d3ee"></span>Praia</div>
+    <div class="leg-item active" data-cat="natureza"     onclick="toggleCat('natureza')"><span class="leg-dot" style="background:#4ade80"></span>Natureza</div>
+    <div class="leg-item active" data-cat="restaurante"  onclick="toggleCat('restaurante')"><span class="leg-dot" style="background:#fb923c"></span>Restaurante</div>
+    <div class="leg-item active" data-cat="outro"        onclick="toggleCat('outro')"><span class="leg-dot" style="background:#a78bfa"></span>Outro</div>
+  </div>
+</div>
+
+<!-- VERSION -->
+<div id="ver">v23</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="brand">🌍 <em>Nossos</em> Lugares</div>
+
+  <div class="vtoggle">
+    <button class="vbtn on"  id="vb-all" onclick="setView('all')">Todos</button>
+    <button class="vbtn vu1" id="vb-u1"  onclick="setView('u1')">—</button>
+    <button class="vbtn vu2" id="vb-u2"  onclick="setView('u2')">—</button>
+  </div>
+
+  <div class="statsbar">
+    <div class="sitem"><div class="sval" id="st-c" style="color:var(--amber)">0</div><div class="slbl">países</div></div>
+    <div class="sitem"><div class="sval" id="st-k" style="color:var(--blue)">0</div><div class="slbl">continentes</div></div>
+    <div class="sitem"><div class="sval" id="st-p" style="color:var(--green)">0</div><div class="slbl">cidades</div></div>
+    <div class="sitem"><div class="sval" id="st-m" style="color:var(--coral)">0</div><div class="slbl">km</div></div>
+    <div class="sitem" onclick="openStats()" style="cursor:pointer;border-left:1px solid var(--border2);padding-left:1.25rem;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'">
+      <div class="sval" style="color:var(--muted2);font-size:.85rem">≡</div>
+      <div class="slbl">stats</div>
+    </div>
+  </div>
+
+  <div class="autharea">
+    <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores"><span id="theme-dot"></span></button>
+    <img id="uavatar">
+    <button id="authbtn" onclick="doAuth()">Entrar</button>
+  </div>
+</div>
+
+<!-- THEME POPOVER -->
+<div id="theme-pop">
+  <div>
+    <div class="tp-label">Estilo do mapa</div>
+    <div class="tp-map-row">
+      <button class="tp-map-btn active" id="mb-escuro"    onclick="setMapStyle('escuro')">⬛ Escuro</button>
+      <button class="tp-map-btn"        id="mb-colorido"  onclick="setMapStyle('colorido')">🗺 Colorido</button>
+      <button class="tp-map-btn"        id="mb-claro"     onclick="setMapStyle('claro')">⬜ Claro</button>
+      <button class="tp-map-btn"        id="mb-satelite"  onclick="setMapStyle('satelite')">🛰 Satélite</button>
+    </div>
+  </div>
+    <div class="tp-row" id="tp-accent">
+      <div class="tp-swatch" data-theme="ambar"     style="background:#e8a93c" onclick="applyAccent('ambar')"     title="Âmbar"></div>
+      <div class="tp-swatch" data-theme="esmeralda" style="background:#4ade80" onclick="applyAccent('esmeralda')" title="Esmeralda"></div>
+      <div class="tp-swatch" data-theme="safira"    style="background:#60a5fa" onclick="applyAccent('safira')"    title="Safira"></div>
+      <div class="tp-swatch" data-theme="coral"     style="background:#fb7185" onclick="applyAccent('coral')"     title="Coral"></div>
+      <div class="tp-swatch" data-theme="violeta"   style="background:#a78bfa" onclick="applyAccent('violeta')"   title="Violeta"></div>
+      <div class="tp-swatch" data-theme="aurora"    style="background:#2dd4bf" onclick="applyAccent('aurora')"    title="Aurora"></div>
+    </div>
+  </div>
+  <div>
+    <div class="tp-label">Cor do Sérgio</div>
+    <div class="tp-row" id="tp-u1">
+      <div class="tp-swatch" data-col="#f97316" style="background:#f97316" onclick="applyU1('#f97316')"></div>
+      <div class="tp-swatch" data-col="#fb7185" style="background:#fb7185" onclick="applyU1('#fb7185')"></div>
+      <div class="tp-swatch" data-col="#fbbf24" style="background:#fbbf24" onclick="applyU1('#fbbf24')"></div>
+      <div class="tp-swatch" data-col="#4ade80" style="background:#4ade80" onclick="applyU1('#4ade80')"></div>
+      <div class="tp-swatch" data-col="#60a5fa" style="background:#60a5fa" onclick="applyU1('#60a5fa')"></div>
+      <div class="tp-swatch" data-col="#e8e8e8" style="background:#e8e8e8" onclick="applyU1('#e8e8e8')"></div>
+    </div>
+  </div>
+  <div>
+    <div class="tp-label">Cor da Andrea</div>
+    <div class="tp-row" id="tp-u2">
+      <div class="tp-swatch" data-col="#a78bfa" style="background:#a78bfa" onclick="applyU2('#a78bfa')"></div>
+      <div class="tp-swatch" data-col="#2dd4bf" style="background:#2dd4bf" onclick="applyU2('#2dd4bf')"></div>
+      <div class="tp-swatch" data-col="#fb7185" style="background:#fb7185" onclick="applyU2('#fb7185')"></div>
+      <div class="tp-swatch" data-col="#4ade80" style="background:#4ade80" onclick="applyU2('#4ade80')"></div>
+      <div class="tp-swatch" data-col="#fbbf24" style="background:#fbbf24" onclick="applyU2('#fbbf24')"></div>
+      <div class="tp-swatch" data-col="#e8e8e8" style="background:#e8e8e8" onclick="applyU2('#e8e8e8')"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- FAB -->
+<button id="fab" class="" onclick="openPanel()" title="Adicionar lugar">+</button>
+
+<!-- CROSS STATS -->
+<div id="xstats">
+  <span>🤝 em comum <strong id="xs-c">0</strong></span>
+  <span style="color:var(--u1)">só de <strong id="xs-n1">—</strong>: <strong id="xs-1">0</strong></span>
+  <span style="color:var(--u2)">só de <strong id="xs-n2">—</strong>: <strong id="xs-2">0</strong></span>
+</div>
+
+<!-- EMPTY STATE -->
+<div id="empty">
+  <div class="etitle">Nenhum lugar ainda</div>
+  <div class="esub">Clique com o botão direito no mapa para adicionar</div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div class="ph">
+    <span class="pt" id="panel-title">📍 Adicionar lugar</span>
+    <button class="pc" onclick="closePanel()">✕</button>
+  </div>
+  <div class="pb">
+
+    <div class="fg">
+      <div class="flbl">Buscar cidade ou lugar</div>
+      <input class="fi" id="si" placeholder="ex: Roma, Eiffel Tower, Hard Rock NYC…" oninput="onSI()" onkeydown="if(event.key==='Enter')doGeo()">
+      <div id="gres"></div>
+    </div>
+
+    <div id="lprev">
+      <div class="ln" id="ln"></div>
+      <div class="lm" id="lm"></div>
+    </div>
+
+    <div class="fg">
+      <div class="flbl">Categoria</div>
+      <select class="fs" id="f-cat">
+        <option value="cidade">Cidade</option>
+        <option value="ponto">Ponto Turístico</option>
+        <option value="hardrock">Hard Rock Café</option>
+        <option value="praia">Praia</option>
+        <option value="natureza">Natureza</option>
+        <option value="restaurante">Restaurante</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+
+    <div class="fr">
+      <div class="fg"><div class="flbl">País</div><input class="fi" id="f-country" placeholder="País"></div>
+      <div class="fg">
+        <div class="flbl">Continente</div>
+        <select class="fs" id="f-cont">
+          <option value="">Selecione</option>
+          <option>América do Sul</option>
+          <option>América do Norte</option>
+          <option>América Central</option>
+          <option>Europa</option>
+          <option>África</option>
+          <option>Ásia</option>
+          <option>Oceania</option>
+          <option>Antártida</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg"><div class="flbl">Anos visitados (opcional)</div><input class="fi" id="f-year" placeholder="ex: 2018, 2023 · separe por vírgula"></div>
+    <div class="fg">
+      <div class="flbl">Avaliação (opcional)</div>
+      <div id="rating-stars" style="display:flex;gap:6px;margin-top:4px">
+        <span class="star" data-v="1" onclick="setRating(1)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
+        <span class="star" data-v="2" onclick="setRating(2)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
+        <span class="star" data-v="3" onclick="setRating(3)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
+        <span class="star" data-v="4" onclick="setRating(4)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
+        <span class="star" data-v="5" onclick="setRating(5)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
+      </div>
+      <input type="hidden" id="f-rating" value="0">
+    </div>
+    <div class="fg"><div class="flbl">Observações (opcional)</div><textarea class="fta" id="f-notes" placeholder="Memórias, avaliação, dicas…"></textarea></div>
+
+    <button class="bsave" id="bsave" onclick="savePlace()" disabled>Salvar lugar</button>
+    <button class="bcancel" onclick="closePanel()">Cancelar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════════════════
+firebase.initializeApp({
+  apiKey: "AIzaSyBJROGm0ENKVfkKQzPU60v_X-pQKbr_4iw",
+  authDomain: "mapa-viagens-andrea-sergio.firebaseapp.com",
+  projectId: "mapa-viagens-andrea-sergio",
+  storageBucket: "mapa-viagens-andrea-sergio.firebasestorage.app",
+  messagingSenderId: "170780046387",
+  appId: "1:170780046387:web:078645c776597ba22f9f46"
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let me           = null;
+let places       = [];
+let view         = 'all';
+let pending      = null;
+let markers      = {};
+let stimer       = null;
+let geoData      = [];
+let map;
+let uids         = [];
+let editingId    = null;  // id do place sendo editado (null = novo)
+let legendOpen   = true;
+let activeCategories = new Set(['cidade','ponto','hardrock','praia','natureza','restaurante','outro']);
+
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const SP = [-23.5505, -46.6333]; // São Paulo
+
+const ICONS = {
+  cidade:      'C',
+  ponto:       '&#9733;',
+  hardrock:    'HR',
+  praia:       '&#126;',
+  natureza:    '&#9650;',
+  restaurante: 'R',
+  outro:       '+',
+};
+
+const ICONS_LABEL = {
+  cidade:      '🏙️ Cidade',
+  ponto:       '🏛️ Ponto Turístico',
+  hardrock:    '🎸 Hard Rock Café',
+  praia:       '🏖️ Praia',
+  natureza:    '🏔️ Natureza',
+  restaurante: '🍽️ Restaurante',
+  outro:       '📌 Outro',
+};
+
+const CONT = {
+  // América do Sul
+  'brasil':'América do Sul','brazil':'América do Sul','argentina':'América do Sul',
+  'chile':'América do Sul','peru':'América do Sul','colombia':'América do Sul',
+  'uruguai':'América do Sul','uruguay':'América do Sul','bolivia':'América do Sul',
+  'paraguai':'América do Sul','paraguay':'América do Sul','equador':'América do Sul',
+  'ecuador':'América do Sul','venezuela':'América do Sul','guiana':'América do Sul',
+  'guyana':'América do Sul','suriname':'América do Sul',
+  // América do Norte
+  'estados unidos':'América do Norte','united states':'América do Norte','usa':'América do Norte',
+  'canada':'América do Norte',
+  // América Central/Caribe
+  'mexico':'América Central','guatemala':'América Central','honduras':'América Central',
+  'el salvador':'América Central','nicaragua':'América Central','costa rica':'América Central',
+  'panama':'América Central','cuba':'América Central','jamaica':'América Central',
+  'haiti':'América Central','republica dominicana':'América Central',
+  'bahamas':'América Central','barbados':'América Central','trinidad':'América Central',
+  // Europa
+  'portugal':'Europa','espanha':'Europa','spain':'Europa',
+  'franca':'Europa','france':'Europa',
+  'italia':'Europa','italy':'Europa',
+  'alemanha':'Europa','germany':'Europa',
+  'reino unido':'Europa','united kingdom':'Europa','england':'Europa','scotland':'Europa','wales':'Europa',
+  'holanda':'Europa','netherlands':'Europa',
+  'belgica':'Europa','belgium':'Europa',
+  'suica':'Europa','switzerland':'Europa',
+  'austria':'Europa',
+  'grecia':'Europa','greece':'Europa',
+  'croacia':'Europa','croatia':'Europa',
+  'republica tcheca':'Europa','czech republic':'Europa',
+  'polonia':'Europa','poland':'Europa',
+  'hungria':'Europa','hungary':'Europa',
+  'romenia':'Europa','romania':'Europa',
+  'suecia':'Europa','sweden':'Europa',
+  'noruega':'Europa','norway':'Europa',
+  'dinamarca':'Europa','denmark':'Europa',
+  'finlandia':'Europa','finland':'Europa',
+  'irlanda':'Europa','ireland':'Europa',
+  'turquia':'Europa','turkey':'Europa',
+  'russia':'Europa','ucrania':'Europa','ukraine':'Europa',
+  'servia':'Europa','serbia':'Europa','eslovenia':'Europa','slovenia':'Europa',
+  'eslovaquia':'Europa','slovakia':'Europa','bulgaria':'Europa',
+  'albania':'Europa','macedonia':'Europa','montenegro':'Europa',
+  'luxemburgo':'Europa','luxembourg':'Europa',
+  'malta':'Europa','chipre':'Europa','cyprus':'Europa',
+  'estonia':'Europa','letonia':'Europa','latvia':'Europa','lituania':'Europa','lithuania':'Europa',
+  'islandia':'Europa','iceland':'Europa','monaco':'Europa','liechtenstein':'Europa',
+  // Ásia
+  'japao':'Ásia','japan':'Ásia',
+  'china':'Ásia',
+  'coreia do sul':'Ásia','south korea':'Ásia','coreia':'Ásia',
+  'tailandia':'Ásia','thailand':'Ásia',
+  'vietna':'Ásia','vietnam':'Ásia',
+  'indonesia':'Ásia',
+  'malasia':'Ásia','malaysia':'Ásia',
+  'singapura':'Ásia','singapore':'Ásia',
+  'india':'Ásia',
+  'nepal':'Ásia',
+  'filipinas':'Ásia','philippines':'Ásia',
+  'camboja':'Ásia','cambodia':'Ásia',
+  'emirados':'Ásia','united arab emirates':'Ásia','uae':'Ásia',
+  'qatar':'Ásia','israel':'Ásia',
+  'jordania':'Ásia','jordan':'Ásia',
+  'arabia saudita':'Ásia','saudi arabia':'Ásia',
+  'maldivas':'Ásia','maldives':'Ásia',
+  'sri lanka':'Ásia','birmania':'Ásia','myanmar':'Ásia',
+  'laos':'Ásia','mongolia':'Ásia',
+  'bangladesh':'Ásia','paquistao':'Ásia','pakistan':'Ásia',
+  'cazaquistao':'Ásia','uzbequistao':'Ásia',
+  'azerbaijao':'Ásia','azerbaijani':'Ásia',
+  'georgia':'Ásia','armenia':'Ásia',
+  'libano':'Ásia','lebanon':'Ásia',
+  'iraque':'Ásia','iraq':'Ásia','ira':'Ásia','iran':'Ásia',
+  'afeganistao':'Ásia','afghanistan':'Ásia',
+  'taiwan':'Ásia','hong kong':'Ásia','macau':'Ásia',
+  // África
+  'egito':'África','egypt':'África',
+  'marrocos':'África','morocco':'África',
+  'africa do sul':'África','south africa':'África',
+  'quenia':'África','kenya':'África',
+  'tanzania':'África',
+  'tunisia':'África',
+  'gana':'África','ghana':'África',
+  'nigeria':'África',
+  'etiopia':'África','ethiopia':'África',
+  'senegal':'África','namibia':'África','zimbabue':'África','zimbabwe':'África',
+  'uganda':'África','ruanda':'África','rwanda':'África',
+  'mocambique':'África','mozambique':'África',
+  'angola':'África','zambia':'África',
+  'mali':'África','burkina faso':'África','costa do marfim':'África',
+  'camaroes':'África','cameroon':'África',
+  'libia':'África','libya':'África',
+  'tunisia':'África','tunisia':'África',
+  'argelia':'África','algeria':'África',
+  // Oceania
+  'australia':'Oceania','nova zelandia':'Oceania','new zealand':'Oceania',
+  'fiji':'Oceania','papua nova guine':'Oceania','papua new guinea':'Oceania',
+  'vanuatu':'Oceania','samoa':'Oceania','tonga':'Oceania',
+};
+
+// Remove acentos para comparação
+function norm(s) {
+  return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+
+function guessContinent(country) {
+  if (!country) return '';
+  const k = norm(country);
+  for (const [n, c] of Object.entries(CONT)) {
+    const nn = norm(n);
+    if (k === nn || k.includes(nn) || nn.includes(k)) return c;
+  }
+  return '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════════════════════════
+const MAP_TILES = {
+  escuro:   { url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',            sub:'abcd', attr:'© OSM © CARTO' },
+  colorido: { url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub:'abcd', attr:'© OSM © CARTO' },
+  claro:    { url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',            sub:'abcd', attr:'© OSM © CARTO' },
+  satelite: { url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', sub:'', attr:'© Esri, Maxar, Earthstar Geographics' },
+};
+
+let tileLayer = null;
+
+function setMapStyle(key) {
+  const t = MAP_TILES[key] || MAP_TILES.escuro;
+  if (tileLayer) map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(t.url, {
+    attribution: t.attr,
+    subdomains:  t.sub || 'abcd',
+    maxZoom:     19,
+  });
+  tileLayer.addTo(map);
+  localStorage.setItem('t-mapstyle', key);
+  // atualiza botões
+  document.querySelectorAll('.tp-map-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'mb-' + key);
+  });
+}
+
+function initMap() {
+  map = L.map('map', { zoomControl:false }).setView([20, 10], 2);
+  L.control.zoom({ position:'bottomright' }).addTo(map);
+  // carrega estilo salvo
+  const saved = localStorage.getItem('t-mapstyle') || 'escuro';
+  setMapStyle(saved);
+}
+
+function uColor(uid) {
+  return uid === uids[0] ? getComputedStyle(document.documentElement).getPropertyValue('--u1').trim()
+                         : getComputedStyle(document.documentElement).getPropertyValue('--u2').trim();
+}
+
+function uName(place) { return (place.userName || '').split(' ')[0] || 'Usuário'; }
+
+const CAT_COLORS = {
+  cidade:      '#e8e8e8', // branco — cidade genérica
+  ponto:       '#fbbf24', // âmbar — ponto turístico
+  hardrock:    '#ef4444', // vermelho — Hard Rock
+  praia:       '#22d3ee', // ciano — praia
+  natureza:    '#4ade80', // verde — natureza
+  restaurante: '#fb923c', // laranja — restaurante
+  outro:       '#a78bfa', // roxo — outro
+};
+
+function makeIcon(place) {
+  const outer = uColor(place.userId);
+  const inner = CAT_COLORS[place.category] || '#e8e8e8';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 28 40">
+    <path d="M14 0C6.27 0 0 6.27 0 14c0 5.26 2.9 9.84 7.18 12.28L14 40l6.82-13.72C25.1 23.84 28 19.26 28 14 28 6.27 21.73 0 14 0z"
+      fill="${outer}" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+    <circle cx="14" cy="14" r="6" fill="rgba(255,255,255,0.88)"/>
+    <circle cx="14" cy="14" r="3.5" fill="${inner}"/>
+  </svg>`;
+  return L.divIcon({
+    className: '',
+    html: svg,
+    iconSize:   [20, 28],
+    iconAnchor: [10, 28],
+    popupAnchor:[0, -30],
+  });
+}
+
+function makePopup(place) {
+  const c = uColor(place.userId);
+  const cat = {
+    cidade:'Cidade', ponto:'Ponto Turístico', hardrock:'Hard Rock Café',
+    praia:'Praia', natureza:'Natureza', restaurante:'Restaurante', outro:'Outro'
+  }[place.category] || place.category;
+
+  const canEdit = me !== null;
+  const loc = [
+    place.city && place.city !== place.name ? place.city : null,
+    place.country, place.continent
+  ].filter(Boolean).join(' · ');
+  const yrs = place.years?.length ? place.years.join(' · ') : place.year || null;
+  const rating = place.rating || 0;
+  const stars = rating > 0
+    ? '<span style="color:var(--amber);letter-spacing:2px">' + '★'.repeat(rating) + '</span>'
+      + '<span style="color:var(--muted);letter-spacing:2px">' + '★'.repeat(5-rating) + '</span>'
+    : null;
+
+  return `<div class="pbox">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:${c};text-transform:uppercase;letter-spacing:.12em">${cat}</div>
+      <span class="puser" style="background:${c}22;color:${c};border:1px solid ${c}44">${uName(place)}</span>
+    </div>
+    <div class="pname">${place.name}</div>
+    ${stars ? `<div style="font-size:14px;margin-top:5px;line-height:1">${stars}</div>` : ''}
+    ${loc ? `<div class="pmeta" style="margin-top:5px">${loc}</div>` : ''}
+    ${yrs ? `<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>` : ''}
+    ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
+    ${canEdit ? `<div style="display:flex;gap:5px;margin-top:10px">
+      <button class="pdel" style="margin:0;flex:1;text-align:center;color:var(--blue);border-color:#1e3a5f" onclick="editPlace('${place.id}')">Editar</button>
+      <button class="pdel" style="margin:0;flex:1;text-align:center" onclick="delPlace('${place.id}')">Remover</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderMap() {
+  let vis = places;
+  if (view === 'u1') vis = places.filter(p => p.userId === uids[0]);
+  if (view === 'u2') vis = places.filter(p => p.userId === uids[1]);
+
+  // filtro por categoria
+  vis = vis.filter(p => activeCategories.has(p.category || 'outro'));
+
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+
+  // Add markers
+  vis.forEach(p => {
+    if (isNaN(p.lat) || isNaN(p.lng)) return;
+    const m = L.marker([p.lat, p.lng], { icon: makeIcon(p) });
+    m.bindPopup(makePopup(p), { maxWidth:220, minWidth:200 });
+    m.addTo(map);
+    markers[p.id] = m;
+  });
+
+  updateStats(vis);
+  updateCross();
+  updateEmpty();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════════
+function hav(la1, lo1, la2, lo2) {
+  const R = 6371, d2r = Math.PI/180;
+  const dLa = (la2-la1)*d2r, dLo = (lo2-lo1)*d2r;
+  const a = Math.sin(dLa/2)**2 + Math.cos(la1*d2r)*Math.cos(la2*d2r)*Math.sin(dLo/2)**2;
+  return 2*R*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function updateStats(vis) {
+  const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
+  const continents = new Set(vis.map(p=>p.continent || guessContinent(p.country)).filter(Boolean));
+  const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
+  const km = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
+
+  document.getElementById('st-c').textContent = countries.size;
+  document.getElementById('st-k').textContent = continents.size;
+  document.getElementById('st-p').textContent = cities.size;
+  document.getElementById('st-m').textContent = km >= 1000 ? (km/1000).toFixed(1)+'k' : km;
+}
+
+function updateCross() {
+  const el = document.getElementById('xstats');
+  if (view !== 'all' || uids.length < 2) { el.classList.remove('vis'); return; }
+
+  const c1 = new Set(places.filter(p=>p.userId===uids[0]).map(p=>p.country).filter(Boolean));
+  const c2 = new Set(places.filter(p=>p.userId===uids[1]).map(p=>p.country).filter(Boolean));
+  const common = [...c1].filter(c=>c2.has(c)).length;
+  const e1 = [...c1].filter(c=>!c2.has(c)).length;
+  const e2 = [...c2].filter(c=>!c1.has(c)).length;
+
+  document.getElementById('xs-c').textContent = common;
+  document.getElementById('xs-1').textContent = e1;
+  document.getElementById('xs-2').textContent = e2;
+  el.classList.add('vis');
+}
+
+function updateEmpty() {
+  const el = document.getElementById('empty');
+  el.classList.toggle('vis', places.length === 0);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW
+// ═══════════════════════════════════════════════════════════════
+function setView(v) {
+  view = v;
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('vb-'+v).classList.add('on');
+  renderMap();
+}
+
+function refreshLabels() {
+  const u1 = places.find(p=>p.userId===uids[0]);
+  const u2 = places.find(p=>p.userId===uids[1]);
+  if (u1) {
+    document.getElementById('vb-u1').textContent = uName(u1);
+    document.getElementById('xs-n1').textContent = uName(u1);
+  }
+  if (u2) {
+    document.getElementById('vb-u2').textContent = uName(u2);
+    document.getElementById('xs-n2').textContent = uName(u2);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+function doAuth() {
+  if (me) { if (confirm('Sair da conta?')) auth.signOut(); return; }
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .catch(e => toast('Erro ao entrar: ' + e.message));
+}
+
+const ALLOWED = ['svazfernandes@gmail.com', 'andreabalieiro@gmail.com'];
+
+auth.onAuthStateChanged(user => {
+  // Rejeita qualquer conta fora da lista
+  if (user && !ALLOWED.includes(user.email)) {
+    auth.signOut();
+    toast('⛔ Acesso restrito — conta não autorizada');
+    return;
+  }
+  me = user;
+  const btn = document.getElementById('authbtn');
+  const av  = document.getElementById('uavatar');
+  const fab = document.getElementById('fab');
+
+  if (user) {
+    btn.textContent = user.displayName?.split(' ')[0] || 'Sair';
+    btn.classList.add('in');
+    if (user.photoURL) { av.src = user.photoURL; av.style.display='block'; }
+    fab.classList.add('vis');
+  } else {
+    btn.textContent = 'Entrar';
+    btn.classList.remove('in');
+    av.style.display = 'none';
+    fab.classList.remove('vis');
+  }
+  renderMap(); // refresh popups (show/hide delete)
+});
+
+// ═══════════════════════════════════════════════════════════════
+// STATS MODAL
+// ═══════════════════════════════════════════════════════════════
+let statsView = 'all'; // visão própria do modal de stats
+
+function openStats() {
+  document.getElementById('stats-modal').classList.add('open');
+  // sincronizar labels dos botões com nomes reais
+  if (uids[0]) {
+    const n1 = (places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0] || 'Usuário 1';
+    const n2 = (places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0] || 'Usuário 2';
+    document.getElementById('svb-u1').textContent = n1;
+    document.getElementById('svb-u2').textContent = n2;
+  }
+  renderStats();
+}
+
+function closeStats() {
+  document.getElementById('stats-modal').classList.remove('open');
+}
+
+function setStatsView(v, btn) {
+  statsView = v;
+  document.querySelectorAll('.svbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderStats();
+}
+
+function renderStats() {
+  const body = document.getElementById('stats-body');
+  const vis = statsView==='all' ? places
+            : statsView==='u1' ? places.filter(p=>p.userId===uids[0])
+            : places.filter(p=>p.userId===uids[1]);
+
+  if (!vis.length) {
+    body.innerHTML='<div style="text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;padding:2rem">Nenhum lugar ainda</div>';
+    return;
+  }
+
+  const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
+  const continents = new Set(vis.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
+  const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
+  const km         = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
+
+  // anos
+  const yearCount = {};
+  let semData = 0;
+  vis.forEach(p=>{
+    const yrs = p.years?.length ? p.years : (p.year?[p.year]:[]);
+    if (yrs.length === 0) { semData++; return; }
+    yrs.forEach(y=>{ yearCount[y]=(yearCount[y]||0)+1; });
+  });
+  const sortedYears = Object.keys(yearCount).map(Number).sort();
+  const maxYC = Math.max(...Object.values(yearCount), semData, 1);
+  const firstYear = sortedYears[0]||null;
+  const lastYear  = sortedYears[sortedYears.length-1]||null;
+  const yearsSpan = (firstYear&&lastYear&&lastYear>firstYear) ? lastYear-firstYear+1 : 1;
+  const avgPerYear = (vis.length/yearsSpan).toFixed(1);
+
+  // lugar mais longe
+  let farthest=null, maxDist=0;
+  vis.forEach(p=>{ const d=hav(SP[0],SP[1],p.lat,p.lng); if(d>maxDist){maxDist=d;farthest=p;} });
+
+  // categoria
+  const CAT_NAMES={cidade:'Cidade',ponto:'Ponto Turístico',hardrock:'Hard Rock Café',praia:'Praia',natureza:'Natureza',restaurante:'Restaurante',outro:'Outro'};
+  const catCount={};
+  vis.forEach(p=>{ catCount[p.category||'outro']=(catCount[p.category||'outro']||0)+1; });
+  const maxCat = Math.max(...Object.values(catCount),1);
+  const hrCount = catCount['hardrock']||0;
+
+  // continente
+  const contCount={}, byContinent={};
+  vis.forEach(p=>{
+    const c=p.continent||guessContinent(p.country);
+    if(c){ contCount[c]=(contCount[c]||0)+1; if(!byContinent[c])byContinent[c]=new Set(); if(p.country)byContinent[c].add(p.country); }
+  });
+  const maxCont=Math.max(...Object.values(contCount),1);
+  const contColors={'América do Sul':'#4ade80','América do Norte':'#fbbf24','América Central':'#fb923c','Europa':'#60a5fa','Ásia':'#f97316','África':'#a78bfa','Oceania':'#2dd4bf'};
+  const favCont = Object.entries(contCount).sort((a,b)=>b[1]-a[1])[0];
+
+  const viewLabel = statsView==='all'?'todos':statsView==='u1'?(places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0]:(places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0];
+
+  // cross user
+  let crossHTML='';
+  if(uids.length>=2){
+    const u1p=places.filter(p=>p.userId===uids[0]);
+    const u2p=places.filter(p=>p.userId===uids[1]);
+    const n1=(u1p[0]?.userName||'').split(' ')[0]||'Usuário 1';
+    const n2=(u2p[0]?.userName||'').split(' ')[0]||'Usuário 2';
+    const c1=new Set(u1p.map(p=>p.country).filter(Boolean));
+    const c2=new Set(u2p.map(p=>p.country).filter(Boolean));
+    const common=[...c1].filter(c=>c2.has(c));
+    const e1=[...c1].filter(c=>!c2.has(c));
+    const e2=[...c2].filter(c=>!c1.has(c));
+    const cont1=new Set(u1p.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
+    const cont2=new Set(u2p.map(p=>p.continent||guessContinent(p.country)).filter(Boolean));
+    const yr1=new Set(); u1p.forEach(p=>(p.years||[p.year]).filter(Boolean).forEach(y=>yr1.add(y)));
+    const yr2=new Set(); u2p.forEach(p=>(p.years||[p.year]).filter(Boolean).forEach(y=>yr2.add(y)));
+    const yrCommon=[...yr1].filter(y=>yr2.has(y)).sort();
+    const km1=Math.round(u1p.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
+    const km2=Math.round(u2p.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
+
+    crossHTML=`<hr class="sdivider">
+    <div>
+      <div class="sblock-title">${n1} vs ${n2}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:start;margin-bottom:.75rem">
+        <div style="text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--u1);font-weight:700;margin-bottom:.3rem">${n1}</div>
+          ${[['lugares',u1p.length],['países',c1.size],['continentes',cont1.size],['km',km1>=1000?(km1/1000).toFixed(1)+'k':km1]].map(([l,v])=>`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">${v} ${l}</div>`).join('')}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.2rem .5rem">
+          <div style="font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:800;color:var(--green)">${common.length}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);text-align:center">países<br>em comum</div>
+          ${yrCommon.length?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);margin-top:.3rem;text-align:center">${yrCommon.join(', ')}<br>anos juntos</div>`:''}
+        </div>
+        <div style="text-align:left">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--u2);font-weight:700;margin-bottom:.3rem">${n2}</div>
+          ${[['lugares',u2p.length],['países',c2.size],['continentes',cont2.size],['km',km2>=1000?(km2/1000).toFixed(1)+'k':km2]].map(([l,v])=>`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">${v} ${l}</div>`).join('')}
+        </div>
+      </div>
+      ${e1.length||e2.length?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+        <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:.3rem">Só ${n1}</div><div class="country-tags">${e1.map(c=>`<span class="country-tag" style="border-color:var(--u1)55;color:var(--u1)">${c}</span>`).join('')}</div></div>
+        <div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:.3rem">Só ${n2}</div><div class="country-tags">${e2.map(c=>`<span class="country-tag" style="border-color:var(--u2)55;color:var(--u2)">${c}</span>`).join('')}</div></div>
+      </div>`:''}
+    </div>`;
+  }
+
+  body.innerHTML=`
+    <div>
+      <div class="sblock-title">Resumo · ${viewLabel}</div>
+      <div class="summary-grid">
+        <div class="sg-item"><div class="sg-val" style="color:var(--amber)">${countries.size}</div><div class="sg-lbl">países</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--blue)">${continents.size}</div><div class="sg-lbl">continentes</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--green)">${cities.size}</div><div class="sg-lbl">cidades</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--coral)">${km>=1000?(km/1000).toFixed(1)+'k':km}</div><div class="sg-lbl">km</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--text)">${vis.length}</div><div class="sg-lbl">lugares</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--muted2)">${((countries.size/195)*100).toFixed(1)}%</div><div class="sg-lbl">do mundo</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:var(--muted2)">${((continents.size/7)*100).toFixed(0)}%</div><div class="sg-lbl">dos conts.</div></div>
+        <div class="sg-item"><div class="sg-val" style="color:#ef4444">${hrCount}</div><div class="sg-lbl">hard rocks</div></div>
+      </div>
+    </div>
+
+    <hr class="sdivider">
+    <div>
+      <div class="sblock-title">Destaques</div>
+      <div class="conq-grid">
+        ${farthest?`<div class="conq-item"><div class="conq-val" style="color:var(--amber)">${Math.round(maxDist).toLocaleString('pt-BR')} km</div><div class="conq-lbl">lugar mais longe</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">${farthest.name}</div></div>`:''}
+        ${firstYear?`<div class="conq-item"><div class="conq-val" style="color:var(--green)">${firstYear}${lastYear&&lastYear!==firstYear?' → '+lastYear:''}</div><div class="conq-lbl">período de viagens</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">${yearsSpan} ano${yearsSpan>1?'s':''} viajando</div></div>`:''}
+        ${sortedYears.length?`<div class="conq-item"><div class="conq-val" style="color:var(--blue)">${avgPerYear}</div><div class="conq-lbl">lugares por ano</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">média</div></div>`:''}
+        ${favCont?`<div class="conq-item"><div class="conq-val" style="color:${contColors[favCont[0]]||'#888'}">${favCont[0]}</div><div class="conq-lbl">continente favorito</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">${favCont[1]} lugares</div></div>`:''}
+      </div>
+    </div>
+
+    ${sortedYears.length||semData?`<hr class="sdivider">
+    <div>
+      <div class="sblock-title">Por ano</div>
+      ${sortedYears.map(y=>`<div class="bar-row"><div class="bar-label">${y}</div><div class="bar-track"><div class="bar-fill" style="width:${(yearCount[y]/maxYC*100).toFixed(0)}%;background:var(--blue)"></div></div><div class="bar-count">${yearCount[y]}</div></div>`).join('')}
+      ${semData?`<div class="bar-row"><div class="bar-label" style="color:var(--muted)">sem data</div><div class="bar-track"><div class="bar-fill" style="width:${(semData/maxYC*100).toFixed(0)}%;background:var(--muted)"></div></div><div class="bar-count" style="color:var(--muted)">${semData}</div></div>`:''}
+    </div>`:''}
+
+    <hr class="sdivider">
+    <div>
+      <div class="sblock-title">Por categoria</div>
+      ${Object.entries(CAT_NAMES).filter(([k])=>catCount[k]).sort((a,b)=>(catCount[b[0]]||0)-(catCount[a[0]]||0)).map(([k,lbl])=>`<div class="bar-row"><div class="bar-label">${lbl}</div><div class="bar-track"><div class="bar-fill" style="width:${((catCount[k]||0)/maxCat*100).toFixed(0)}%;background:${CAT_COLORS[k]||'#888'}"></div></div><div class="bar-count">${catCount[k]||0}</div></div>`).join('')}
+    </div>
+
+    <hr class="sdivider">
+    <div>
+      <div class="sblock-title">Por continente · países</div>
+      ${Object.entries(contCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+        <div style="margin-bottom:.75rem">
+          <div class="bar-row"><div class="bar-label">${c}</div><div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${contColors[c]||'#888'}"></div></div><div class="bar-count">${n}</div></div>
+          ${byContinent[c]?`<div class="country-tags">${[...byContinent[c]].map(co=>`<span class="country-tag" style="border-color:${contColors[c]||'#888'}44;color:${contColors[c]||'#888'}">${co}</span>`).join('')}</div>`:''}
+        </div>`).join('')}
+    </div>
+
+    ${crossHTML}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FIRESTORE
+// ═══════════════════════════════════════════════════════════════
+db.collection('places').orderBy('timestamp','desc').onSnapshot(snap => {
+  places = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+  // Build ordered uids list
+  const seen = new Set();
+  uids = [];
+  places.forEach(p => { if (!seen.has(p.userId)) { seen.add(p.userId); uids.push(p.userId); }});
+
+  renderMap();
+  refreshLabels();
+
+  // Hide loading
+  const l = document.getElementById('loading');
+  l.classList.add('gone');
+  setTimeout(() => l.remove(), 500);
+}, err => {
+  console.error(err);
+  document.getElementById('loading').textContent = 'Erro: ' + err.message;
+});
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════════════════════════
+async function delPlace(id) {
+  if (!me) return;
+  if (!confirm('Remover este lugar?')) return;
+  try {
+    await db.collection('places').doc(id).delete();
+    toast('Lugar removido');
+  } catch(e) { toast('Erro: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GEOCODING (Nominatim)
+// ═══════════════════════════════════════════════════════════════
+function onSI() {
+  clearTimeout(stimer);
+  const v = document.getElementById('si').value.trim();
+  if (v.length < 3) { document.getElementById('gres').style.display='none'; return; }
+  stimer = setTimeout(doGeo, 650);
+}
+
+async function doGeo() {
+  const q = document.getElementById('si').value.trim();
+  if (!q) return;
+  const el = document.getElementById('gres');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="gr">Buscando...</div>';
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&namedetails=1&accept-language=pt`,
+      { headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
+    );
+    geoData = await r.json();
+    if (!geoData.length) { el.innerHTML='<div class="gr">Nenhum resultado</div>'; return; }
+    el.innerHTML = geoData.map((r,i) => {
+      const addr = r.address || {};
+      const name = r.namedetails?.['name:pt'] || r.display_name.split(',')[0].trim();
+      const region = [
+        addr.state || addr.region || null,
+        addr.country || null
+      ].filter(Boolean).join(', ');
+      return `<div class="gr" onclick="pickGeo(${i})">
+        <strong>${name}</strong>${region ? region : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML='<div class="gr">Erro na busca</div>'; }
+}
+
+function pickGeo(i) {
+  const r = geoData[i];
+  const addr = r.address || {};
+  const ptName = r.namedetails?.['name:pt'];
+  const name    = ptName || r.display_name.split(',')[0].trim();
+  const city    = addr.city || addr.town || addr.village || addr.municipality || name;
+  const country = addr.country || r.display_name.split(',').slice(-1)[0].trim();
+
+  pending = { lat: parseFloat(r.lat), lng: parseFloat(r.lon), name, city, country };
+
+  // fill form
+  document.getElementById('f-country').value = country;
+  const cont = guessContinent(country);
+  if (cont) document.getElementById('f-cont').value = cont;
+
+  // preview
+  document.getElementById('ln').textContent = name;
+  document.getElementById('lm').textContent = r.display_name.split(',').slice(1,4).join(',').trim();
+  document.getElementById('lprev').style.display = 'block';
+  document.getElementById('gres').style.display  = 'none';
+  document.getElementById('si').value = name;
+  document.getElementById('bsave').disabled = false;
+
+  map.flyTo([pending.lat, pending.lng], Math.max(map.getZoom(), 8), { duration:1.5 });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EDITAR LUGAR
+// ═══════════════════════════════════════════════════════════════
+function editPlace(id) {
+  if (!me) return;
+  const place = places.find(p => p.id === id);
+  if (!place) return;
+  map.closePopup();
+
+  editingId = id;
+  pending = { lat: place.lat, lng: place.lng, name: place.name, city: place.city, country: place.country };
+
+  document.getElementById('panel-title').textContent = '✏️ Editar lugar';
+  document.getElementById('si').value       = place.name;
+  document.getElementById('f-cat').value    = place.category || 'cidade';
+  document.getElementById('f-country').value = place.country || '';
+  document.getElementById('f-cont').value   = place.continent || '';
+  document.getElementById('f-year').value   = place.years?.length ? place.years.join(', ') : (place.year || '');
+  document.getElementById('f-notes').value  = place.notes || '';
+  setRating(place.rating || 0);
+
+  document.getElementById('ln').textContent = place.name;
+  document.getElementById('lm').textContent = [place.city, place.country].filter(Boolean).join(', ');
+  document.getElementById('lprev').style.display = 'block';
+  document.getElementById('bsave').disabled = false;
+  document.getElementById('bsave').textContent = 'Salvar alterações';
+
+  document.getElementById('panel').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RATING
+// ═══════════════════════════════════════════════════════════════
+function setRating(val) {
+  document.getElementById('f-rating').value = val;
+  document.querySelectorAll('.star').forEach(s => {
+    const v = parseInt(s.dataset.v);
+    s.style.color   = v <= val ? 'var(--amber)' : 'var(--muted2)';
+    s.style.opacity = v <= val ? '1' : '.3';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FILTRO POR CATEGORIA
+// ═══════════════════════════════════════════════════════════════
+function toggleCat(cat) {
+  if (activeCategories.has(cat)) {
+    // se só restar 1, não deixa desligar
+    if (activeCategories.size <= 1) { toast('Pelo menos uma categoria deve estar ativa'); return; }
+    activeCategories.delete(cat);
+  } else {
+    activeCategories.add(cat);
+  }
+  // atualiza visual da legenda
+  document.querySelectorAll('.leg-item').forEach(el => {
+    const c = el.dataset.cat;
+    el.classList.toggle('active',   activeCategories.has(c));
+    el.classList.toggle('inactive', !activeCategories.has(c));
+  });
+  renderMap();
+}
+
+function toggleLegend() {
+  legendOpen = !legendOpen;
+  const items = document.getElementById('leg-items');
+  const arrow = document.getElementById('leg-arrow');
+  items.style.display = legendOpen ? 'flex' : 'none';
+  arrow.textContent = legendOpen ? '▲' : '▼';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════════════════════════════
+async function savePlace() {
+  if (!me || !pending) return;
+  const btn = document.getElementById('bsave');
+  btn.disabled = true;
+  btn.textContent = editingId ? 'Atualizando…' : 'Salvando…';
+
+  const rating = parseInt(document.getElementById('f-rating').value) || 0;
+  const doc = {
+    name:      pending.name,
+    city:      pending.city,
+    country:   document.getElementById('f-country').value.trim(),
+    continent: document.getElementById('f-cont').value,
+    category:  document.getElementById('f-cat').value,
+    years:     document.getElementById('f-year').value.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900),
+    notes:     document.getElementById('f-notes').value.trim(),
+    rating:    rating,
+    lat:       pending.lat,
+    lng:       pending.lng,
+    userId:    me.uid,
+    userName:  me.displayName || me.email,
+    userEmail: me.email,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    if (editingId) {
+      await db.collection('places').doc(editingId).update(doc);
+      toast('✓ ' + doc.name + ' atualizado!');
+    } else {
+      await db.collection('places').add(doc);
+      toast('✓ ' + doc.name + ' adicionado!');
+    }
+    closePanel();
+  } catch(e) {
+    toast('Erro: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = editingId ? 'Salvar alterações' : 'Salvar lugar';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL
+// ═══════════════════════════════════════════════════════════════
+function openPanel() {
+  if (!me) { toast('Faça login para adicionar lugares'); return; }
+  resetForm();
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('si').focus();
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  resetForm();
+}
+
+function resetForm() {
+  editingId = null;
+  pending = null;
+  ['si','f-country','f-year','f-notes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-cat').value   = 'cidade';
+  document.getElementById('f-cont').value  = '';
+  document.getElementById('f-rating').value = '0';
+  setRating(0);
+  document.getElementById('gres').style.display  = 'none';
+  document.getElementById('lprev').style.display = 'none';
+  document.getElementById('bsave').disabled = true;
+  document.getElementById('bsave').textContent = 'Salvar lugar';
+  document.getElementById('panel-title').textContent = '📍 Adicionar lugar';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMA
+// ═══════════════════════════════════════════════════════════════
+const THEMES = {
+  ambar:    { accent:'#e8a93c', bg:'#07090f', bg2:'#0c1018', bg3:'#121824', b1:'#1a2236', b2:'#1f2d47' },
+  esmeralda:{ accent:'#4ade80', bg:'#05090a', bg2:'#091410', bg3:'#0f1c18', b1:'#162a22', b2:'#1c3830' },
+  safira:   { accent:'#60a5fa', bg:'#060810', bg2:'#0a0f1c', bg3:'#0f1528', b1:'#162038', b2:'#1c2a4a' },
+  coral:    { accent:'#fb7185', bg:'#0f0608', bg2:'#170a0d', bg3:'#1f0f14', b1:'#301520', b2:'#3c1c2c' },
+  violeta:  { accent:'#a78bfa', bg:'#08060f', bg2:'#0e0a1c', bg3:'#151028', b1:'#22183a', b2:'#2c1f4c' },
+  aurora:   { accent:'#2dd4bf', bg:'#05090b', bg2:'#091412', bg3:'#0f1e1c', b1:'#163028', b2:'#1c3e34' },
+};
+
+function initTheme() {
+  const t  = localStorage.getItem('t-theme') || 'ambar';
+  const u1 = localStorage.getItem('t-u1')    || '#f97316';
+  const u2 = localStorage.getItem('t-u2')    || '#a78bfa';
+  applyFullTheme(t, false);
+  setCSSVar('--u1', u1);
+  setCSSVar('--u2', u2);
+  syncSwatches(t, u1, u2);
+}
+
+function setCSSVar(name, val) {
+  document.documentElement.style.setProperty(name, val);
+}
+
+function applyFullTheme(key, save=true) {
+  const t = THEMES[key] || THEMES.ambar;
+  setCSSVar('--amber',   t.accent);
+  setCSSVar('--bg',      t.bg);
+  setCSSVar('--bg2',     t.bg2);
+  setCSSVar('--bg3',     t.bg3);
+  setCSSVar('--border',  t.b1);
+  setCSSVar('--border2', t.b2);
+  if (save) {
+    localStorage.setItem('t-theme', key);
+    syncSwatches(key, localStorage.getItem('t-u1')||'#f97316', localStorage.getItem('t-u2')||'#a78bfa');
+  }
+  const dot = document.getElementById('theme-dot');
+  if (dot) dot.style.background = t.accent;
+}
+
+function applyAccent(key) { applyFullTheme(key); }
+
+function applyU1(val) {
+  setCSSVar('--u1', val);
+  localStorage.setItem('t-u1', val);
+  syncSwatches(localStorage.getItem('t-theme')||'ambar', val, localStorage.getItem('t-u2')||'#a78bfa');
+  renderMap();
+}
+
+function applyU2(val) {
+  setCSSVar('--u2', val);
+  localStorage.setItem('t-u2', val);
+  syncSwatches(localStorage.getItem('t-theme')||'ambar', localStorage.getItem('t-u1')||'#f97316', val);
+  renderMap();
+}
+
+function syncSwatches(themeKey, u1, u2) {
+  // accent swatches
+  document.querySelectorAll('#tp-accent .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.theme === themeKey);
+  });
+  // user swatches — compara cor do background do swatch
+  document.querySelectorAll('#tp-u1 .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.col === u1);
+  });
+  document.querySelectorAll('#tp-u2 .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.col === u2);
+  });
+}
+
+function toggleThemePop() {
+  const pop = document.getElementById('theme-pop');
+  pop.classList.toggle('open');
+  if (pop.classList.contains('open')) {
+    setTimeout(() => {
+      document.addEventListener('click', function handler(e) {
+        if (!pop.contains(e.target) && e.target.id !== 'theme-btn'
+            && !e.target.closest('#theme-btn')) {
+          pop.classList.remove('open');
+          document.removeEventListener('click', handler);
+        }
+      });
+    }, 10);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLIQUE DIREITO NO MAPA → ADICIONAR LUGAR
+// ═══════════════════════════════════════════════════════════════
+async function reverseGeocode(lat, lng) {
+  if (!me) { toast('Faça login para adicionar lugares'); return; }
+
+  toast('🔍 Identificando local...');
+
+  // marcador temporário no ponto clicado
+  const tmpM = L.circleMarker([lat, lng], {
+    radius:7, color:'rgba(255,255,255,.8)',
+    fillColor: getComputedStyle(document.documentElement).getPropertyValue('--amber').trim() || '#e8a93c',
+    fillOpacity:.9, weight:2, dashArray:'4 3',
+  }).addTo(map);
+
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&namedetails=1&accept-language=pt`,
+      { headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
+    );
+    const d = await r.json();
+
+    if (d.error) { toast('Local não identificado — preencha manualmente'); openPanel(); return; }
+
+    const addr = d.address || {};
+    const name    = d.namedetails?.['name:pt'] || d.display_name.split(',')[0].trim();
+    const city    = addr.city || addr.town || addr.village || addr.municipality || name;
+    const country = addr.country || '';
+    const cont    = guessContinent(country);
+
+    openPanel(); // reseta o form
+
+    // preenche após o reset
+    pending = { lat, lng, name, city, country };
+    document.getElementById('si').value          = name;
+    document.getElementById('f-country').value   = country;
+    if (cont) document.getElementById('f-cont').value = cont;
+    document.getElementById('ln').textContent    = name;
+    document.getElementById('lm').textContent    = [addr.suburb||addr.neighbourhood||'', city, addr.state||'', country].filter(Boolean).join(', ');
+    document.getElementById('lprev').style.display = 'block';
+    document.getElementById('bsave').disabled    = false;
+
+    toast('📍 ' + name + ' encontrado');
+  } catch(e) {
+    toast('Sem conexão — preencha manualmente');
+    openPanel();
+  } finally {
+    map.removeLayer(tmpM);
+  }
+}
+
+initTheme();
+initMap();
+
+map.on('contextmenu', function(e) {
+  reverseGeocode(e.latlng.lat, e.latlng.lng);
+});
+
+setTimeout(() => {
+  // Fallback: hide loading after 6s even if Firestore doesn't respond
+  const l = document.getElementById('loading');
+  if (l) { l.classList.add('gone'); setTimeout(()=>l.remove(), 500); }
+}, 6000);
+</script>
+</body>
+</html>
