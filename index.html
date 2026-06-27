@@ -573,7 +573,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v70</div>
+<div id="ver">v71</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1928,19 +1928,7 @@ function processSnap(docs) {
   uids = allUids;
   renderMap();
   refreshLabels();
-
-  // Mostra botão do painel do outro usuário com nome correto
-  const otherBtn = document.getElementById('other-btn');
-  if (otherBtn && user && uids.length >= 2) {
-    const other = getOtherUser();
-    if (other) {
-      const n = other.name.split(' ')[0];
-      otherBtn.textContent = 'ver de ' + n;
-      otherBtn.style.display = 'inline-block';
-    }
-  } else if (otherBtn && !user) {
-    otherBtn.style.display = 'none';
-  }
+  updateOtherBtn();
   hideLoading();
   const rb = document.getElementById('reload-btn');
   if (rb) rb.style.display = 'none';
@@ -2409,6 +2397,35 @@ async function reverseGeocode(lat, lng, forceName) {
     openPanel();
   } finally {
     map.removeLayer(tmpM);
+  }
+}
+
+function updateOtherBtn() {
+  const btn = document.getElementById('other-btn');
+  if (!btn || !me) { if (btn) btn.style.display = 'none'; return; }
+
+  // Descobre o nome do outro usuário pelos dados ou pelo email conhecido
+  const other = getOtherUser();
+  let otherName = null;
+
+  if (other) {
+    otherName = other.name.split(' ')[0];
+  } else {
+    // Fallback: deduz pelo email (lista conhecida)
+    const myIdx = EMAIL_ORDER.indexOf(me.email);
+    if (myIdx !== -1) {
+      const otherEmail = EMAIL_ORDER[myIdx === 0 ? 1 : 0];
+      // Tenta achar o nome em algum lugar
+      const ref = places.find(p => p.userEmail === otherEmail);
+      otherName = ref ? ref.userName.split(' ')[0] : otherEmail.split('@')[0];
+    }
+  }
+
+  if (otherName) {
+    btn.textContent = 'ver de ' + otherName;
+    btn.style.display = 'inline-block';
+  } else {
+    btn.style.display = 'none';
   }
 }
 
