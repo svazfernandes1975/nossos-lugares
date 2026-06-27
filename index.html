@@ -153,8 +153,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--border2)!important;border-radius:12px!important;box-shadow:0 4px 24px rgba(0,0,0,.6)!important;color:var(--text)!important;padding:0!important}
 .leaflet-popup-content{margin:0!important;width:auto!important}
 .leaflet-popup-tip-container{display:none}
-.pbox{padding:14px 16px}
-.pname{font-size:.92rem;font-weight:700;margin-bottom:4px}
+.pbox{padding:16px 18px}
+.pname{font-size:1.05rem;font-weight:800;margin-bottom:2px;line-height:1.2}
 .pmeta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);line-height:1.7}
 .puser{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:1px 8px;border-radius:20px;margin-top:6px}
 .pdel{display:block;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--coral);background:none;border:1px solid #5a1a1a;border-radius:6px;padding:3px 10px;cursor:pointer;width:100%;text-align:left;transition:background .15s}
@@ -351,7 +351,25 @@ let uids     = [];         // ordered user UIDs [first, second]
 // ═══════════════════════════════════════════════════════════════
 const SP = [-23.5505, -46.6333]; // São Paulo
 
-const ICONS = {cidade:'🏙️',ponto:'🏛️',hardrock:'🎸',praia:'🏖️',natureza:'🏔️',restaurante:'🍽️',outro:'📌'};
+const ICONS = {
+  cidade:      'C',
+  ponto:       '&#9733;',
+  hardrock:    'HR',
+  praia:       '&#126;',
+  natureza:    '&#9650;',
+  restaurante: 'R',
+  outro:       '+',
+};
+
+const ICONS_LABEL = {
+  cidade:      '🏙️ Cidade',
+  ponto:       '🏛️ Ponto Turístico',
+  hardrock:    '🎸 Hard Rock Café',
+  praia:       '🏖️ Praia',
+  natureza:    '🏔️ Natureza',
+  restaurante: '🍽️ Restaurante',
+  outro:       '📌 Outro',
+};
 
 const CONT = {
   'brazil':'América do Sul','argentina':'América do Sul','chile':'América do Sul',
@@ -426,30 +444,46 @@ function uName(place) { return (place.userName || '').split(' ')[0] || 'Usuário
 
 function makeIcon(place) {
   const c = uColor(place.userId);
-  const e = ICONS[place.category] || '📌';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+    <path d="M14 0C6.27 0 0 6.27 0 14c0 5.26 2.9 9.84 7.18 12.28L14 40l6.82-13.72C25.1 23.84 28 19.26 28 14 28 6.27 21.73 0 14 0z"
+      fill="${c}" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+    <circle cx="14" cy="14" r="6" fill="rgba(255,255,255,0.88)"/>
+    <circle cx="14" cy="14" r="3" fill="${c}" opacity="0.7"/>
+  </svg>`;
   return L.divIcon({
-    className:'',
-    html:`<div style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:${c};border:3px solid ${c}88;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer">${e}</div>`,
-    iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-20],
+    className: '',
+    html: svg,
+    iconSize:   [28, 40],
+    iconAnchor: [14, 40],
+    popupAnchor:[0, -42],
   });
 }
 
 function makePopup(place) {
   const c = uColor(place.userId);
+  const cat = {
+    cidade:'Cidade', ponto:'Ponto Turístico', hardrock:'Hard Rock Café',
+    praia:'Praia', natureza:'Natureza', restaurante:'Restaurante', outro:'Outro'
+  }[place.category] || place.category;
+
   const canDel = me !== null;
-  const meta = [
+  const loc = [
     place.city && place.city !== place.name ? place.city : null,
-    place.country, place.continent,
-    place.year ? '📅 ' + place.year : null,
-    place.notes ? '💬 ' + place.notes : null,
+    place.country, place.continent
   ].filter(Boolean).join(' · ');
 
   return `<div class="pbox">
-    <div class="pname">${ICONS[place.category]||'📌'} ${place.name}</div>
-    <div class="pmeta">${meta}</div>
-    <span class="puser" style="background:${c}22;color:${c};border:1px solid ${c}44">${uName(place)}</span>
-    ${canDel ? `<button class="pdel" onclick="delPlace('${place.id}')">✕ Remover</button>` : ''}
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:${c};text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">${cat}</div>
+    <div class="pname">${place.name}</div>
+    ${loc ? `<div class="pmeta" style="margin-top:4px">${loc}</div>` : ''}
+    ${place.year ? `<div class="pmeta" style="margin-top:3px">Visitado em ${place.year}</div>` : ''}
+    ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px">
+      <span class="puser" style="background:${c}22;color:${c};border:1px solid ${c}44">${uName(place)}</span>
+      ${canDel ? `<button class="pdel" style="margin:0;width:auto;padding:3px 12px" onclick="delPlace('${place.id}')">Remover</button>` : ''}
+    </div>
   </div>`;
+}
 }
 
 function renderMap() {
@@ -466,7 +500,7 @@ function renderMap() {
   vis.forEach(p => {
     if (isNaN(p.lat) || isNaN(p.lng)) return;
     const m = L.marker([p.lat, p.lng], { icon: makeIcon(p) });
-    m.bindPopup(makePopup(p), { maxWidth:260, minWidth:200 });
+    m.bindPopup(makePopup(p), { maxWidth:320, minWidth:260 });
     m.addTo(map);
     markers[p.id] = m;
   });
