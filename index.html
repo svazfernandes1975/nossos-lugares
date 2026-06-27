@@ -451,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v48</div>
+<div id="ver">v49</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1105,34 +1105,87 @@ auth.onAuthStateChanged(user => {
 // STATS MODAL
 // ═══════════════════════════════════════════════════════════════
 let statsView = 'all'; // visão própria do modal de stats
-let drillYear    = null;
-let drillCat     = null;
-let drillCont    = null;
-let drillCountry = null; // 'continent:country'
+// ── DRILL STATE (3 níveis: secção → país → tipo → lugares) ──
+let drillYear    = null;  // ano expandido
+let drillYearCo  = null;  // país expandido dentro do ano
+let drillYearCat = null;  // categoria expandida dentro do ano+país
+let drillCat     = null;  // categoria expandida (seção Por Categoria)
+let drillCont    = null;  // continente expandido
+let drillContCo  = null;  // país expandido dentro do continente
+let drillContCat = null;  // categoria expandida dentro do continente+país
 
 function toggleDrill(section, key) {
-  if (section==='year')    { drillYear    = drillYear    ===key ? null : key; }
-  if (section==='cat')     { drillCat     = drillCat     ===key ? null : key; }
-  if (section==='cont')    { drillCont    = drillCont    ===key ? null : key; drillCountry = null; }
-  if (section==='country') { drillCountry = drillCountry ===key ? null : key; }
+  switch(section) {
+    case 'year':     drillYear    = drillYear    ===key?null:key; drillYearCo=null; drillYearCat=null; break;
+    case 'year-co':  drillYearCo  = drillYearCo  ===key?null:key; drillYearCat=null; break;
+    case 'year-cat': drillYearCat = drillYearCat ===key?null:key; break;
+    case 'cat':      drillCat     = drillCat     ===key?null:key; break;
+    case 'cont':     drillCont    = drillCont    ===key?null:key; drillContCo=null; drillContCat=null; break;
+    case 'cont-co':  drillContCo  = drillContCo  ===key?null:key; drillContCat=null; break;
+    case 'cont-cat': drillContCat = drillContCat ===key?null:key; break;
+  }
   renderStats();
 }
 
+// Renderiza nível folha: lista de lugares
 function placeListHTML(places) {
-  if (!places.length) return `<div style="padding:10px 14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">Sem lugares</div>`;
+  if (!places.length) return `<div style="padding:8px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">Sem lugares</div>`;
   return [...places].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(p => {
-    const yrs = p.years?.length ? p.years.join(', ') : (p.year||'');
+    const yrs  = p.years?.length ? p.years.join(', ') : (p.year||'');
     const city = p.city && p.city !== p.name ? p.city : '';
     const col  = CAT_COLORS[p.category||'outro'] || '#888';
     return `<div style="display:flex;align-items:stretch;border-bottom:1px solid var(--border)">
-      <div style="width:3px;background:${col};flex-shrink:0;border-radius:0"></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;flex:1;min-width:0">
+      <div style="width:3px;background:${col};flex-shrink:0"></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;flex:1;min-width:0">
         <div style="flex:1;min-width:0">
-          <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-          ${city?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px">${city}</div>`:''}
+          <div style="font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          ${city?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:1px">${city}</div>`:''}
         </div>
-        ${yrs?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;flex-shrink:0">${yrs}</span>`:''}
+        ${yrs?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap">${yrs}</span>`:''}
       </div>
+    </div>`;
+  }).join('');
+}
+
+// Renderiza os 2 níveis internos: País → Tipo → Lugares
+// coState/catState = variável de estado; coSec/catSec = string da seção para toggleDrill
+function innerDrillHTML(places, l1key, coState, catState, coSec, catSec, accentColor) {
+  const CN = {cidade:'Cidade',ponto:'Ponto Turístico',hardrock:'Hard Rock Café',praia:'Praia',natureza:'Natureza',restaurante:'Restaurante',outro:'Outro'};
+  const byCo = {};
+  places.forEach(p=>{ const co=p.country||'Sem país'; if(!byCo[co])byCo[co]=[]; byCo[co].push(p); });
+
+  return Object.entries(byCo).sort((a,b)=>b[1].length-a[1].length).map(([country, coPlaces])=>{
+    const coKey  = l1key+'::'+country;
+    const coOpen = coState===coKey;
+
+    const byCat = {};
+    if (coOpen) coPlaces.forEach(p=>{ const cat=p.category||'outro'; if(!byCat[cat])byCat[cat]=[]; byCat[cat].push(p); });
+
+    const catHTML = !coOpen ? '' : Object.entries(byCat).sort((a,b)=>b[1].length-a[1].length).map(([cat, catPlaces])=>{
+      const catKey  = coKey+'::'+cat;
+      const catOpen = catState===catKey;
+      const catCol  = CAT_COLORS[cat]||'#888';
+      const esc     = catKey.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<div>
+        <div onclick="toggleDrill('${catSec}','${esc}')" style="display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:5px;${catOpen?'background:var(--bg2)':''}">
+          <div style="width:8px;height:8px;border-radius:2px;background:${catCol};flex-shrink:0"></div>
+          <span style="flex:1;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)">${CN[cat]||cat}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${catPlaces.length}</span>
+          <span style="font-size:9px;color:var(--muted2);margin-left:4px">${catOpen?'▲':'▶'}</span>
+        </div>
+        ${catOpen?`<div style="margin:2px 0 4px 14px;background:var(--bg3);border-radius:6px;overflow:hidden;max-height:220px;overflow-y:auto">${placeListHTML(catPlaces)}</div>`:''}
+      </div>`;
+    }).join('');
+
+    const escCo = coKey.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div style="margin-bottom:1px">
+      <div onclick="toggleDrill('${coSec}','${escCo}')" style="display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:6px;${coOpen?'background:var(--bg2)':''}">
+        <div style="width:5px;height:5px;border-radius:50%;background:${accentColor};flex-shrink:0"></div>
+        <span style="flex:1;font-size:.82rem;color:var(--text)">${country}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${coPlaces.length}</span>
+        <span style="font-size:9px;color:var(--muted2);margin-left:6px">${coOpen?'▲':'▶'}</span>
+      </div>
+      ${coOpen?`<div style="margin:2px 0 6px 12px">${catHTML}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1362,36 +1415,14 @@ function renderStats() {
         const open = drillCont === ct;
         const col  = contColors[ct]||'#888';
         const cp   = vis.filter(p=>(p.continent||guessContinent(p.country,p.countryCode))===ct);
-        const byCo = {};
-        cp.forEach(p=>{ const co=p.country||'?'; byCo[co]=(byCo[co]||0)+1; });
-        const sortedCo = Object.entries(byCo).sort((a,b)=>b[1]-a[1]);
-
-        const countriesHTML = !open ? '' : sortedCo.map(([country,cnt])=>{
-          const ck    = ct + '::' + country;
-          const cOpen = drillCountry === ck;
-          const cpl   = cp.filter(p=>p.country===country);
-          const arr   = cOpen ? '▲' : '▶';
-          const bg    = cOpen ? 'var(--bg2)' : 'transparent';
-          const inner = cOpen ? `<div style="margin:2px 0 6px 13px;background:var(--bg3);border-radius:8px;overflow:hidden">${placeListHTML(cpl)}</div>` : '';
-          return `<div style="margin-bottom:1px">
-            <div onclick="toggleDrill('country',decodeURIComponent('${encodeURIComponent(ck)}'))" style="display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:6px;background:${bg}">
-              <div style="width:5px;height:5px;border-radius:50%;background:${col};flex-shrink:0"></div>
-              <span style="flex:1;font-size:.82rem;color:var(--text)">${country}</span>
-              <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${cnt}</span>
-              <span style="font-size:9px;color:var(--muted2);margin-left:6px">${arr}</span>
-            </div>
-            ${inner}
-          </div>`;
-        }).join('');
-
         return `<div style="margin-bottom:2px">
-          <div class="bar-row" onclick="toggleDrill('cont',decodeURIComponent('${encodeURIComponent(ct)}'))" style="cursor:pointer;border-radius:6px;padding:4px 6px;${open?'background:var(--bg3)':''}">
+          <div class="bar-row" onclick="toggleDrill('cont','${ct}')" style="cursor:pointer;border-radius:6px;${open?'background:var(--bg3);padding-inline:6px':''}">
             <div class="bar-label" style="${open?'color:'+col:''}">${ct}</div>
             <div class="bar-track"><div class="bar-fill" style="width:${(n/maxCont*100).toFixed(0)}%;background:${col}"></div></div>
             <div class="bar-count">${n}</div>
             <span style="margin-left:6px;color:var(--muted2);font-size:10px">${open?'▲':'▼'}</span>
           </div>
-          ${open ? '<div style="margin:4px 0 10px 8px">' + countriesHTML + '</div>' : ''}
+          ${open?`<div style="margin:4px 0 10px 8px">${innerDrillHTML(cp,ct,drillContCo,drillContCat,'cont-co','cont-cat',col)}</div>`:''}
         </div>`;
       }).join('')}
     ${crossHTML}
