@@ -451,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v54</div>
+<div id="ver">v57</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -762,38 +762,95 @@ const CONT_CODE = {
   'tv':'Oceania','vu':'Oceania','ck':'Oceania','nu':'Oceania','pf':'Oceania','nc':'Oceania',
 };
 
-// Fallback por nome (para lugares antigos sem country_code)
+// Fallback por nome (para lugares antigos sem country_code) — cobertura completa
 const CONT = {
+  // América do Sul
   'brasil':'América do Sul','brazil':'América do Sul','argentina':'América do Sul',
   'chile':'América do Sul','peru':'América do Sul','colombia':'América do Sul',
   'uruguai':'América do Sul','uruguay':'América do Sul','bolivia':'América do Sul',
-  'paraguai':'América do Sul','ecuador':'América do Sul','venezuela':'América do Sul',
-  'estados unidos':'América do Norte','united states':'América do Norte','canada':'América do Norte',
+  'paraguai':'América do Sul','paraguay':'América do Sul','ecuador':'América do Sul',
+  'equador':'América do Sul','venezuela':'América do Sul','guiana':'América do Sul',
+  'guiana francesa':'América do Sul','suriname':'América do Sul',
+  // América do Norte
+  'estados unidos':'América do Norte','united states':'América do Norte',
+  'estados unidos da america':'América do Norte','usa':'América do Norte',
+  'canada':'América do Norte',
+  // América Central e Caribe
   'mexico':'América Central','cuba':'América Central','jamaica':'América Central',
   'costa rica':'América Central','panama':'América Central','guatemala':'América Central',
   'republica dominicana':'América Central','haiti':'América Central',
-  'portugal':'Europa','espanha':'Europa','spain':'Europa','franca':'Europa','france':'Europa',
-  'italia':'Europa','italy':'Europa','alemanha':'Europa','germany':'Europa',
-  'reino unido':'Europa','united kingdom':'Europa','holanda':'Europa','netherlands':'Europa',
-  'belgica':'Europa','belgium':'Europa','suica':'Europa','switzerland':'Europa',
-  'austria':'Europa','grecia':'Europa','greece':'Europa','croacia':'Europa','croatia':'Europa',
-  'polonia':'Europa','poland':'Europa','hungria':'Europa','suecia':'Europa','sweden':'Europa',
-  'noruega':'Europa','norway':'Europa','dinamarca':'Europa','denmark':'Europa',
-  'finlandia':'Europa','finland':'Europa','irlanda':'Europa','ireland':'Europa',
-  'turquia':'Europa','turkey':'Europa','russia':'Europa','ucrania':'Europa',
-  'japao':'Ásia','japan':'Ásia','china':'Ásia','coreia do sul':'Ásia','south korea':'Ásia',
-  'tailandia':'Ásia','thailand':'Ásia','vietna':'Ásia','vietnam':'Ásia',
-  'indonesia':'Ásia','malasia':'Ásia','malaysia':'Ásia','singapura':'Ásia','singapore':'Ásia',
-  'india':'Ásia','nepal':'Ásia','filipinas':'Ásia','philippines':'Ásia',
-  'camboja':'Ásia','cambodia':'Ásia','emirados':'Ásia','uae':'Ásia','qatar':'Ásia',
-  'israel':'Ásia','jordania':'Ásia','mongolia':'Ásia','myanmar':'Ásia','laos':'Ásia',
+  'honduras':'América Central','nicaragua':'América Central','el salvador':'América Central',
+  'belize':'América Central','trinidad':'América Central','barbados':'América Central',
+  // Europa — completo
+  'portugal':'Europa','espanha':'Europa','spain':'Europa',
+  'franca':'Europa','france':'Europa','italia':'Europa','italy':'Europa',
+  'alemanha':'Europa','germany':'Europa','reino unido':'Europa','united kingdom':'Europa',
+  'holanda':'Europa','netherlands':'Europa','belgica':'Europa','belgium':'Europa',
+  'suica':'Europa','switzerland':'Europa','austria':'Europa',
+  'grecia':'Europa','greece':'Europa','croacia':'Europa','croatia':'Europa',
+  'polonia':'Europa','poland':'Europa','hungria':'Europa','hungary':'Europa',
+  'suecia':'Europa','sweden':'Europa','noruega':'Europa','norway':'Europa',
+  'dinamarca':'Europa','denmark':'Europa','finlandia':'Europa','finland':'Europa',
+  'irlanda':'Europa','ireland':'Europa','turquia':'Europa','turkey':'Europa',
+  'russia':'Europa','ucrania':'Europa','ukraine':'Europa',
+  'romenia':'Europa','romania':'Europa','roménia':'Europa',
+  'bulgária':'Europa','bulgaria':'Europa',
+  'servia':'Europa','serbia':'Europa','sérvia':'Europa',
+  'eslovaquia':'Europa','slovakia':'Europa','eslováquia':'Europa',
+  'eslovenia':'Europa','slovenia':'Europa','eslovênia':'Europa',
+  'croacia':'Europa','croatia':'Europa','croácia':'Europa',
+  'estonia':'Europa','estônia':'Europa','letonia':'Europa','latvia':'Europa',
+  'letônia':'Europa','lituania':'Europa','lituânia':'Europa','lithuania':'Europa',
+  'bielorrussia':'Europa','bielorrússia':'Europa','belarus':'Europa',
+  'islandia':'Europa','islândia':'Europa','iceland':'Europa',
+  'luxemburgo':'Europa','luxembourg':'Europa',
+  'malta':'Europa','chipre':'Europa','cyprus':'Europa',
+  'moldavia':'Europa','moldávia':'Europa','moldova':'Europa',
+  'albânia':'Europa','albania':'Europa','kosovo':'Europa',
+  'montenegro':'Europa','bósnia':'Europa','bosnia':'Europa',
+  'macedônia':'Europa','macedonia':'Europa','liechtenstein':'Europa',
+  'monaco':'Europa','mônaco':'Europa','andorra':'Europa',
+  'san marino':'Europa','vaticano':'Europa','vatican':'Europa',
+  'georgia':'Europa','geórgia':'Europa',
+  'chequia':'Europa','chéquia':'Europa','tchequia':'Europa','tchéquia':'Europa',
+  'czech republic':'Europa','czechia':'Europa','republica tcheca':'Europa','republica checa':'Europa',
+  // Ásia
+  'japao':'Ásia','japão':'Ásia','japan':'Ásia',
+  'china':'Ásia','coreia do sul':'Ásia','south korea':'Ásia',
+  'tailandia':'Ásia','tailândia':'Ásia','thailand':'Ásia',
+  'vietna':'Ásia','vietnã':'Ásia','vietnam':'Ásia',
+  'indonesia':'Ásia','indonésia':'Ásia','malasia':'Ásia','malásia':'Ásia','malaysia':'Ásia',
+  'singapura':'Ásia','singapore':'Ásia','india':'Ásia','índia':'Ásia',
+  'nepal':'Ásia','filipinas':'Ásia','philippines':'Ásia',
+  'camboja':'Ásia','cambodia':'Ásia','emirados árabes unidos':'Ásia',
+  'emirados arabes unidos':'Ásia','uae':'Ásia','qatar':'Ásia',
+  'israel':'Ásia','jordania':'Ásia','jordânia':'Ásia','mongolia':'Ásia','mongólia':'Ásia',
+  'myanmar':'Ásia','laos':'Ásia','bangladesh':'Ásia','sri lanka':'Ásia',
+  'paquistao':'Ásia','paquistão':'Ásia','pakistan':'Ásia',
+  'cazaquistao':'Ásia','cazaquistão':'Ásia','kazakhstan':'Ásia',
+  'coreia do norte':'Ásia','north korea':'Ásia','taiwan':'Ásia',
+  'hong kong':'Ásia','macau':'Ásia','timor':'Ásia','brunei':'Ásia',
+  'afeganistao':'Ásia','afghanistan':'Ásia','iraque':'Ásia','iraq':'Ásia',
+  'ira':'Ásia','iran':'Ásia','síria':'Ásia','syria':'Ásia',
+  'líbano':'Ásia','lebanon':'Ásia','omã':'Ásia','oman':'Ásia',
+  'bahrein':'Ásia','bahrain':'Ásia','kuwait':'Ásia',
+  'arabia saudita':'Ásia','saudi arabia':'Ásia','iemen':'Ásia','yemen':'Ásia',
+  // África
   'egito':'África','egypt':'África','marrocos':'África','morocco':'África',
   'africa do sul':'África','south africa':'África','quenia':'África','kenya':'África',
   'tanzania':'África','gana':'África','ghana':'África','nigeria':'África',
   'etiopia':'África','ethiopia':'África','zimbabue':'África','zimbabwe':'África',
-  'namibia':'África','angola':'África','zambia':'África','botswana':'África','botsuana':'África',
-  'mozambique':'África','ruanda':'África','rwanda':'África','uganda':'África',
-  'australia':'Oceania','nova zelandia':'Oceania','new zealand':'Oceania','fiji':'Oceania',
+  'namibia':'África','namíbia':'África','angola':'África','zambia':'África',
+  'botswana':'África','botsuana':'África','mozambique':'África','moçambique':'África',
+  'ruanda':'África','rwanda':'África','uganda':'África','senegal':'África',
+  'tunísia':'África','tunisia':'África','argélia':'África','algeria':'África',
+  'líbia':'África','libya':'África','sudao':'África','sudan':'África',
+  'mali':'África','camaroes':'África','cameroon':'África','madagascar':'África',
+  'malawi':'África','lesoto':'África','lesotho':'África',
+  // Oceania
+  'australia':'Oceania','austrália':'Oceania','nova zelandia':'Oceania',
+  'nova zelândia':'Oceania','new zealand':'Oceania','fiji':'Oceania',
+  'papua nova guine':'Oceania','papua new guinea':'Oceania',
 };
 
 // Continente sempre em português: usa guessContinent primeiro (ISO code → PT)
@@ -1294,16 +1351,22 @@ function renderStats() {
   const hrCount = catCount['hardrock']||0;
 
   // continente
-  // Por continente: conta países únicos (Set) e guarda places para drill-down
-  const contCountries={};  // continente → Set de países únicos
-  const contPlacesMap={};  // continente → array de places
+  // Por continente: agrupa por país único primeiro, depois por continente
+  const byCountryKey={};
   vis.forEach(p=>{
-    const ct=getContinent(p);
-    if(!ct) return;
+    const ck = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+    if(!ck) return;
+    if(!byCountryKey[ck]) byCountryKey[ck]={places:[],country:p.country||'',code:p.countryCode||''};
+    byCountryKey[ck].places.push(p);
+  });
+  const contCountries={};
+  const contPlacesMap={};
+  Object.values(byCountryKey).forEach(({places,country,code})=>{
+    const ct = getContinent({country,countryCode:code}) || '—';
     if(!contCountries[ct]) contCountries[ct]=new Set();
     if(!contPlacesMap[ct]) contPlacesMap[ct]=[];
-    if(p.country) contCountries[ct].add(p.country);
-    contPlacesMap[ct].push(p);
+    contCountries[ct].add(country||code);
+    contPlacesMap[ct].push(...places);
   });
   const maxCont = Math.max(...Object.values(contCountries).map(s=>s.size), 1);
   const contColors={'América do Sul':'#4ade80','América do Norte':'#fbbf24','América Central':'#fb923c','Europa':'#60a5fa','Ásia':'#f97316','África':'#a78bfa','Oceania':'#2dd4bf'};
