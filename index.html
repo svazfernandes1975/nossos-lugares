@@ -161,7 +161,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .pdel:hover{background:#1f0a0a}
 
 /* ── MARKER ── */
-.mk{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.25);font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s}
+.leaflet-div-icon{background:transparent!important;border:none!important;box-shadow:none!important}
+.mk{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.25);font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s}
 .mk:hover{transform:scale(1.15)}
 
 /* ── TOAST ── */
@@ -550,7 +551,15 @@ function doAuth() {
       .catch(e => toast('Erro ao entrar: ' + e.message));
 }
 
+const ALLOWED = ['svazfernandes@gmail.com', 'andreabalieiro@gmail.com'];
+
 auth.onAuthStateChanged(user => {
+  // Rejeita qualquer conta fora da lista
+  if (user && !ALLOWED.includes(user.email)) {
+    auth.signOut();
+    toast('⛔ Acesso restrito — conta não autorizada');
+    return;
+  }
   me = user;
   const btn = document.getElementById('authbtn');
   const av  = document.getElementById('uavatar');
