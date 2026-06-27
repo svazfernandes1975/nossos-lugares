@@ -454,7 +454,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v61</div>
+<div id="ver">v62</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1622,7 +1622,16 @@ function renderStats() {
         </div>`;
       }).join('')}
     ${crossHTML}
-  `;
+    <hr class="sdivider">
+    <div>
+      <div class="sblock-title" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.textContent=this.textContent.includes('▼')?'Países cadastrados ▲':'Países cadastrados ▼'">Países cadastrados ▼</div>
+      <div style="display:none;flex-wrap:wrap;gap:4px;margin-top:.5rem">
+        ${[...new Map(vis.map(p=>[p.countryCode?p.countryCode.toLowerCase():norm(p.country||''), p.country||'?'])).entries()]
+          .sort((a,b)=>a[1].localeCompare(b[1]))
+          .map(([k,name])=>`<span title="key: ${k}" style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);color:var(--muted2)">${name}</span>`)
+          .join('')}
+      </div>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
