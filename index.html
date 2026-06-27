@@ -454,7 +454,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v64</div>
+<div id="ver">v65</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1140,7 +1140,7 @@ function updateStats(vis) {
   const visAll = view==='all' ? places
     : view==='u1' ? places.filter(p=>p.userId===uids[0])
     : places.filter(p=>p.userId===uids[1]);
-  const countries  = new Set(visAll.map(countryKey).filter(Boolean));
+  const countries  = uniqueCountries(visAll);        // ← mesma função do stats modal
   const continents = new Set(visAll.map(p=>getContinent(p)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
