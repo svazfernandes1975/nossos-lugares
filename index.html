@@ -516,7 +516,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v66</div>
+<div id="ver">v67</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2369,36 +2369,44 @@ async function fetchAreaPlaces() {
   const status = document.getElementById('exp-status');
   const list   = document.getElementById('exp-list');
   status.style.display = 'block';
-  status.textContent = '🔍 Buscando…';
   list.innerHTML = '';
 
-  if (map.getZoom() < 6) {
-    status.textContent = 'Dê mais zoom para ver lugares específicos';
+  const zoom = map.getZoom();
+  if (zoom < 8) {
+    status.textContent = '🔍 Dê mais zoom para explorar lugares';
     return;
   }
+
+  status.textContent = '🔍 Buscando…';
 
   const b = map.getBounds();
   const s = b.getSouth().toFixed(4), w = b.getWest().toFixed(4);
   const n = b.getNorth().toFixed(4), e = b.getEast().toFixed(4);
-  const query = `[out:json][timeout:15];(node["place"~"^(city|town|village|hamlet)$"]["name"](${s},${w},${n},${e}););out 50;`;
+  const query = `[out:json][timeout:10];(node["place"~"^(city|town|village|hamlet)$"]["name"](${s},${w},${n},${e}););out 31;`;
 
   try {
     const r = await fetch('https://overpass-api.de/api/interpreter', {
       method:'POST', body:'data='+encodeURIComponent(query)
     });
     const d = await r.json();
-    const elements = (d.elements||[]).sort((a,b)=>{
+    const all = (d.elements||[]).sort((a,b)=>{
       const o=['city','town','village','hamlet'];
       return o.indexOf(a.tags.place)-o.indexOf(b.tags.place);
     });
 
-    if (!elements.length) { status.textContent = 'Nenhuma cidade encontrada aqui'; return; }
+    // Mais de 30 → pede mais zoom
+    if (all.length > 30) {
+      status.textContent = '🔍 Muitos lugares — dê mais zoom para refinar';
+      return;
+    }
+
+    if (!all.length) { status.textContent = 'Nenhuma cidade encontrada aqui'; return; }
 
     const ICONS  = {city:'🏙',town:'🏘',village:'🏡',hamlet:'🏠'};
     const LABELS = {city:'Cidade',town:'Município',village:'Vila',hamlet:'Lugarejo'};
 
     status.style.display = 'none';
-    list.innerHTML = elements.map(el=>{
+    list.innerHTML = all.map(el=>{
       const name = el.tags['name:pt']||el.tags.name||'?';
       const type = el.tags.place;
       return `<div class="exp-item" onclick="useExplorerPlace('${name.replace(/'/g,"\\'")}',${el.lat},${el.lon})">
@@ -2408,13 +2416,10 @@ async function fetchAreaPlaces() {
       </div>`;
     }).join('');
 
-    if (elements.length>=50) {
-      status.style.display='block';
-      status.textContent='Dê zoom para resultados mais precisos';
-    }
   } catch(e) {
-    status.style.display='block';
-    status.textContent='Erro ao buscar lugares';
+    // Timeout ou erro de rede → área provavelmente grande demais
+    status.style.display = 'block';
+    status.textContent = '🔍 Área muito grande — dê mais zoom';
   }
 }
 
