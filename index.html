@@ -68,7 +68,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 /* ── FAB ── */
 #fab{
-  position:fixed;bottom:2rem;right:2rem;z-index:200;
+  position:fixed;bottom:5.5rem;right:2rem;z-index:200;
   width:52px;height:52px;border-radius:50%;
   background:linear-gradient(135deg,var(--amber),#c8891a);
   color:#000;border:none;font-size:1.4rem;font-weight:800;cursor:pointer;
@@ -257,6 +257,9 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   backdrop-filter:blur(8px);
 }
 .smodal-title{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.svbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:14px;border:none;background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.svbtn:hover{color:var(--text)}
+.svbtn.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .smodal-body{padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1.5rem}
 .sblock-title{
   font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
@@ -285,6 +288,33 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .uc-div{display:flex;flex-direction:column;gap:.4rem;align-items:center}
 .uc-div-item{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:center}
 .uc-common{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--green)}
+
+/* ── THEME POPOVER ── */
+#theme-btn{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);
+  background:transparent;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,transform .15s;flex-shrink:0;
+}
+#theme-btn:hover{border-color:var(--amber);transform:rotate(30deg)}
+#theme-dot{width:12px;height:12px;border-radius:50%;background:var(--amber);pointer-events:none;transition:background .3s}
+#theme-pop{
+  position:fixed;top:4rem;right:1rem;z-index:500;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  padding:1rem 1.1rem;
+  display:none;flex-direction:column;gap:.9rem;
+  box-shadow:0 8px 40px rgba(0,0,0,.7);
+  min-width:190px;
+}
+#theme-pop.open{display:flex}
+.tp-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
+.tp-row{display:flex;gap:6px;flex-wrap:wrap}
+.tp-swatch{
+  width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  transition:transform .15s,border-color .15s;flex-shrink:0;
+}
+.tp-swatch:hover{transform:scale(1.15)}
+.tp-swatch.active{border-color:rgba(255,255,255,.7)}
 
 /* ── VERSION ── */
 #ver{
@@ -329,7 +359,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   #panel.open{bottom:0}
 
   /* fab */
-  #fab{bottom:1.5rem;right:1.25rem;width:46px;height:46px;font-size:1.3rem}
+  #fab{bottom:5rem;right:1.25rem;width:46px;height:46px;font-size:1.3rem}
 
   /* cross stats e legenda: esconde no mobile */
   #xstats{display:none!important}
@@ -349,6 +379,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   <div class="smodal">
     <div class="smodal-h">
       <span class="smodal-title">Estatísticas</span>
+      <div style="display:flex;gap:3px;background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:2px">
+        <button class="svbtn on" id="svb-all" onclick="setStatsView('all',this)">Todos</button>
+        <button class="svbtn" id="svb-u1" onclick="setStatsView('u1',this)">—</button>
+        <button class="svbtn" id="svb-u2" onclick="setStatsView('u2',this)">—</button>
+      </div>
       <button class="pc" onclick="closeStats()">✕</button>
     </div>
     <div class="smodal-body" id="stats-body">
@@ -374,7 +409,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v15</div>
+<div id="ver">v19</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -394,9 +429,49 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   </div>
 
   <div class="autharea">
+    <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores">
+      <span id="theme-dot"></span>
+    </button>
     <button id="statsbtn" onclick="openStats()" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted2);cursor:pointer;transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">stats</button>
     <img id="uavatar">
     <button id="authbtn" onclick="doAuth()">Entrar</button>
+  </div>
+</div>
+
+<!-- THEME POPOVER -->
+<div id="theme-pop">
+  <div>
+    <div class="tp-label">Cor do tema</div>
+    <div class="tp-row" id="tp-accent">
+      <div class="tp-swatch" data-theme="ambar"     style="background:#e8a93c" onclick="applyAccent('ambar')"     title="Âmbar"></div>
+      <div class="tp-swatch" data-theme="esmeralda" style="background:#4ade80" onclick="applyAccent('esmeralda')" title="Esmeralda"></div>
+      <div class="tp-swatch" data-theme="safira"    style="background:#60a5fa" onclick="applyAccent('safira')"    title="Safira"></div>
+      <div class="tp-swatch" data-theme="coral"     style="background:#fb7185" onclick="applyAccent('coral')"     title="Coral"></div>
+      <div class="tp-swatch" data-theme="violeta"   style="background:#a78bfa" onclick="applyAccent('violeta')"   title="Violeta"></div>
+      <div class="tp-swatch" data-theme="aurora"    style="background:#2dd4bf" onclick="applyAccent('aurora')"    title="Aurora"></div>
+    </div>
+  </div>
+  <div>
+    <div class="tp-label">Cor do Sérgio</div>
+    <div class="tp-row" id="tp-u1">
+      <div class="tp-swatch" data-col="#f97316" style="background:#f97316" onclick="applyU1('#f97316')"></div>
+      <div class="tp-swatch" data-col="#fb7185" style="background:#fb7185" onclick="applyU1('#fb7185')"></div>
+      <div class="tp-swatch" data-col="#fbbf24" style="background:#fbbf24" onclick="applyU1('#fbbf24')"></div>
+      <div class="tp-swatch" data-col="#4ade80" style="background:#4ade80" onclick="applyU1('#4ade80')"></div>
+      <div class="tp-swatch" data-col="#60a5fa" style="background:#60a5fa" onclick="applyU1('#60a5fa')"></div>
+      <div class="tp-swatch" data-col="#e8e8e8" style="background:#e8e8e8" onclick="applyU1('#e8e8e8')"></div>
+    </div>
+  </div>
+  <div>
+    <div class="tp-label">Cor da Andrea</div>
+    <div class="tp-row" id="tp-u2">
+      <div class="tp-swatch" data-col="#a78bfa" style="background:#a78bfa" onclick="applyU2('#a78bfa')"></div>
+      <div class="tp-swatch" data-col="#2dd4bf" style="background:#2dd4bf" onclick="applyU2('#2dd4bf')"></div>
+      <div class="tp-swatch" data-col="#fb7185" style="background:#fb7185" onclick="applyU2('#fb7185')"></div>
+      <div class="tp-swatch" data-col="#4ade80" style="background:#4ade80" onclick="applyU2('#4ade80')"></div>
+      <div class="tp-swatch" data-col="#fbbf24" style="background:#fbbf24" onclick="applyU2('#fbbf24')"></div>
+      <div class="tp-swatch" data-col="#e8e8e8" style="background:#e8e8e8" onclick="applyU2('#e8e8e8')"></div>
+    </div>
   </div>
 </div>
 
@@ -729,22 +804,26 @@ function makePopup(place) {
     place.country, place.continent
   ].filter(Boolean).join(' · ');
   const yrs = place.years?.length ? place.years.join(' · ') : place.year || null;
-  const stars = place.rating ? '★'.repeat(place.rating) + '☆'.repeat(5-place.rating) : null;
+  const rating = place.rating || 0;
+  const stars = rating > 0
+    ? '<span style="color:var(--amber);letter-spacing:2px">' + '★'.repeat(rating) + '</span>'
+      + '<span style="color:var(--muted);letter-spacing:2px">' + '★'.repeat(5-rating) + '</span>'
+    : null;
 
   return `<div class="pbox">
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:${c};text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">${cat}</div>
-    <div class="pname">${place.name}</div>
-    ${loc ? `<div class="pmeta" style="margin-top:4px">${loc}</div>` : ''}
-    ${yrs ? `<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>` : ''}
-    ${stars ? `<div style="font-size:11px;color:var(--amber);margin-top:4px;letter-spacing:1px">${stars}</div>` : ''}
-    ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:${c};text-transform:uppercase;letter-spacing:.12em">${cat}</div>
       <span class="puser" style="background:${c}22;color:${c};border:1px solid ${c}44">${uName(place)}</span>
-      <div style="display:flex;gap:5px">
-        ${canEdit ? `<button class="pdel" style="margin:0;width:auto;padding:3px 10px;color:var(--blue);border-color:#1e3a5f" onclick="editPlace('${place.id}')">Editar</button>` : ''}
-        ${canEdit ? `<button class="pdel" style="margin:0;width:auto;padding:3px 10px" onclick="delPlace('${place.id}')">Remover</button>` : ''}
-      </div>
     </div>
+    <div class="pname">${place.name}</div>
+    ${stars ? `<div style="font-size:14px;margin-top:5px;line-height:1">${stars}</div>` : ''}
+    ${loc ? `<div class="pmeta" style="margin-top:5px">${loc}</div>` : ''}
+    ${yrs ? `<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>` : ''}
+    ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
+    ${canEdit ? `<div style="display:flex;gap:5px;margin-top:10px">
+      <button class="pdel" style="margin:0;flex:1;text-align:center;color:var(--blue);border-color:#1e3a5f" onclick="editPlace('${place.id}')">Editar</button>
+      <button class="pdel" style="margin:0;flex:1;text-align:center" onclick="delPlace('${place.id}')">Remover</button>
+    </div>` : ''}
   </div>`;
 }
 
@@ -879,18 +958,35 @@ auth.onAuthStateChanged(user => {
 // ═══════════════════════════════════════════════════════════════
 // STATS MODAL
 // ═══════════════════════════════════════════════════════════════
+let statsView = 'all'; // visão própria do modal de stats
+
 function openStats() {
   document.getElementById('stats-modal').classList.add('open');
+  // sincronizar labels dos botões com nomes reais
+  if (uids[0]) {
+    const n1 = (places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0] || 'Usuário 1';
+    const n2 = (places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0] || 'Usuário 2';
+    document.getElementById('svb-u1').textContent = n1;
+    document.getElementById('svb-u2').textContent = n2;
+  }
   renderStats();
 }
+
 function closeStats() {
   document.getElementById('stats-modal').classList.remove('open');
 }
 
+function setStatsView(v, btn) {
+  statsView = v;
+  document.querySelectorAll('.svbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderStats();
+}
+
 function renderStats() {
   const body = document.getElementById('stats-body');
-  const vis = view==='all' ? places
-            : view==='u1' ? places.filter(p=>p.userId===uids[0])
+  const vis = statsView==='all' ? places
+            : statsView==='u1' ? places.filter(p=>p.userId===uids[0])
             : places.filter(p=>p.userId===uids[1]);
 
   if (!vis.length) {
@@ -937,7 +1033,7 @@ function renderStats() {
   const contColors={'América do Sul':'#4ade80','América do Norte':'#fbbf24','América Central':'#fb923c','Europa':'#60a5fa','Ásia':'#f97316','África':'#a78bfa','Oceania':'#2dd4bf'};
   const favCont = Object.entries(contCount).sort((a,b)=>b[1]-a[1])[0];
 
-  const viewLabel = view==='all'?'todos':view==='u1'?(places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0]:(places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0];
+  const viewLabel = statsView==='all'?'todos':statsView==='u1'?(places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0]:(places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0];
 
   // cross user
   let crossHTML='';
@@ -1290,8 +1386,97 @@ function toast(msg) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// TEMA
+// ═══════════════════════════════════════════════════════════════
+const THEMES = {
+  ambar:    { accent:'#e8a93c', bg:'#07090f', bg2:'#0c1018', bg3:'#121824', b1:'#1a2236', b2:'#1f2d47' },
+  esmeralda:{ accent:'#4ade80', bg:'#05090a', bg2:'#091410', bg3:'#0f1c18', b1:'#162a22', b2:'#1c3830' },
+  safira:   { accent:'#60a5fa', bg:'#060810', bg2:'#0a0f1c', bg3:'#0f1528', b1:'#162038', b2:'#1c2a4a' },
+  coral:    { accent:'#fb7185', bg:'#0f0608', bg2:'#170a0d', bg3:'#1f0f14', b1:'#301520', b2:'#3c1c2c' },
+  violeta:  { accent:'#a78bfa', bg:'#08060f', bg2:'#0e0a1c', bg3:'#151028', b1:'#22183a', b2:'#2c1f4c' },
+  aurora:   { accent:'#2dd4bf', bg:'#05090b', bg2:'#091412', bg3:'#0f1e1c', b1:'#163028', b2:'#1c3e34' },
+};
+
+function initTheme() {
+  const t  = localStorage.getItem('t-theme') || 'ambar';
+  const u1 = localStorage.getItem('t-u1')    || '#f97316';
+  const u2 = localStorage.getItem('t-u2')    || '#a78bfa';
+  applyFullTheme(t, false);
+  setCSSVar('--u1', u1);
+  setCSSVar('--u2', u2);
+  syncSwatches(t, u1, u2);
+}
+
+function setCSSVar(name, val) {
+  document.documentElement.style.setProperty(name, val);
+}
+
+function applyFullTheme(key, save=true) {
+  const t = THEMES[key] || THEMES.ambar;
+  setCSSVar('--amber',   t.accent);
+  setCSSVar('--bg',      t.bg);
+  setCSSVar('--bg2',     t.bg2);
+  setCSSVar('--bg3',     t.bg3);
+  setCSSVar('--border',  t.b1);
+  setCSSVar('--border2', t.b2);
+  if (save) {
+    localStorage.setItem('t-theme', key);
+    syncSwatches(key, localStorage.getItem('t-u1')||'#f97316', localStorage.getItem('t-u2')||'#a78bfa');
+  }
+  const dot = document.getElementById('theme-dot');
+  if (dot) dot.style.background = t.accent;
+}
+
+function applyAccent(key) { applyFullTheme(key); }
+
+function applyU1(val) {
+  setCSSVar('--u1', val);
+  localStorage.setItem('t-u1', val);
+  syncSwatches(localStorage.getItem('t-theme')||'ambar', val, localStorage.getItem('t-u2')||'#a78bfa');
+  renderMap();
+}
+
+function applyU2(val) {
+  setCSSVar('--u2', val);
+  localStorage.setItem('t-u2', val);
+  syncSwatches(localStorage.getItem('t-theme')||'ambar', localStorage.getItem('t-u1')||'#f97316', val);
+  renderMap();
+}
+
+function syncSwatches(themeKey, u1, u2) {
+  // accent swatches
+  document.querySelectorAll('#tp-accent .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.theme === themeKey);
+  });
+  // user swatches — compara cor do background do swatch
+  document.querySelectorAll('#tp-u1 .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.col === u1);
+  });
+  document.querySelectorAll('#tp-u2 .tp-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.col === u2);
+  });
+}
+
+function toggleThemePop() {
+  const pop = document.getElementById('theme-pop');
+  pop.classList.toggle('open');
+  if (pop.classList.contains('open')) {
+    setTimeout(() => {
+      document.addEventListener('click', function handler(e) {
+        if (!pop.contains(e.target) && e.target.id !== 'theme-btn'
+            && !e.target.closest('#theme-btn')) {
+          pop.classList.remove('open');
+          document.removeEventListener('click', handler);
+        }
+      });
+    }, 10);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
+initTheme();
 initMap();
 setTimeout(() => {
   // Fallback: hide loading after 6s even if Firestore doesn't respond
