@@ -349,9 +349,10 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 /* ── VERSION ── */
 #ver{
-  position:fixed;bottom:.5rem;left:50%;transform:translateX(-50%);z-index:50;
-  font-family:'DM Mono',monospace;font-size:9px;color:#2a2a2a;letter-spacing:.08em;
-  pointer-events:none;user-select:none;
+  position:fixed;bottom:.6rem;right:.8rem;z-index:50;
+  font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);
+  letter-spacing:.06em;pointer-events:none;user-select:none;
+  background:rgba(7,9,15,.6);padding:2px 6px;border-radius:4px;
 }
 
 /* ── MOBILE ── */
@@ -447,7 +448,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v34</div>
+<div id="ver">v36</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -471,13 +472,32 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   </div>
 
   <div class="autharea">
+    <button id="about-btn" onclick="toggleAbout()" title="Sobre" style="border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">sobre</button>
     <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores"><span id="theme-dot"></span></button>
     <img id="uavatar">
     <button id="authbtn" onclick="doAuth()">Entrar</button>
   </div>
 </div>
 
-<!-- THEME POPOVER -->
+<!-- SOBRE -->
+<div id="about-modal" onclick="if(event.target===this)toggleAbout()" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:18px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.7);overflow:hidden">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:.95rem;font-weight:700;letter-spacing:-.01em">🌍 Nossos Lugares</span>
+      <button onclick="toggleAbout()" style="background:none;border:none;color:var(--muted2);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted2)'">✕</button>
+    </div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      <p style="font-size:.9rem;line-height:1.7;color:var(--text)">Este mapa é o nosso diário de viagem.</p>
+      <p style="font-size:.85rem;line-height:1.8;color:var(--muted2)">Cada pin é uma lembrança — uma cidade que nos surpreendeu, um restaurante que não esquecemos, um Hard Rock que visitamos, uma praia que não queremos sair, um pôr do sol que ficou guardado.</p>
+      <p style="font-size:.85rem;line-height:1.8;color:var(--muted2)">Andrea e Sergio, de São Paulo, começaram a registrar suas andanças pelo mundo em 2007, para nunca esquecer onde estiveram, o que sentiram e o quanto ainda falta explorar.</p>
+      <p style="font-size:.85rem;line-height:1.8;color:var(--muted2)">O mapa é público porque viagem boa se compartilha.</p>
+    </div>
+    <div style="padding:.75rem 1.5rem 1.25rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">desde 2007 · São Paulo, Brasil</span>
+      <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)" id="about-ver"></span>
+    </div>
+  </div>
+</div>
 <div id="theme-pop">
   <div>
     <div class="tp-label">Estilo do mapa</div>
@@ -1617,6 +1637,17 @@ function syncSwatches(themeKey, u1, u2) {
   document.querySelectorAll('#tp-u2 .tp-swatch').forEach(sw => {
     sw.classList.toggle('active', sw.dataset.col === u2);
   });
+}
+
+function toggleAbout() {
+  const m = document.getElementById('about-modal');
+  const open = m.style.display === 'flex';
+  m.style.display = open ? 'none' : 'flex';
+  if (!open) {
+    const ver = document.getElementById('ver');
+    const av  = document.getElementById('about-ver');
+    if (ver && av) av.textContent = ver.textContent;
+  }
 }
 
 function toggleThemePop() {
