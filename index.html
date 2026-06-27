@@ -454,7 +454,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v62</div>
+<div id="ver">v64</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -1373,29 +1373,175 @@ function setStatsView(v, btn) {
   renderStats();
 }
 
+
+// Mapa estático nome → ISO code (português + inglês + variações)
+// Garante que "Alemanha" === "Germany" === 'de' em qualquer situação
+const NAME_TO_CODE = {
+  'brasil':'br','brazil':'br',
+  'argentina':'ar',
+  'chile':'cl',
+  'peru':'pe',
+  'colombia':'co','colômbia':'co',
+  'uruguai':'uy','uruguay':'uy',
+  'bolivia':'bo','bolívia':'bo',
+  'paraguai':'py','paraguay':'py',
+  'equador':'ec','ecuador':'ec',
+  'venezuela':'ve',
+  'guiana':'gy','guyana':'gy',
+  'suriname':'sr',
+  'mexico':'mx','méxico':'mx',
+  'panama':'pa','panamá':'pa',
+  'cuba':'cu',
+  'jamaica':'jm',
+  'costa rica':'cr',
+  'guatemala':'gt',
+  'honduras':'hn',
+  'nicaragua':'ni',
+  'el salvador':'sv',
+  'belize':'bz',
+  'haiti':'ht',
+  'republica dominicana':'do',
+  'trinidad':'tt','trinidad e tobago':'tt',
+  'estados unidos':'us','united states':'us','estados unidos da america':'us',
+  'estados unidos da américa':'us','eua':'us','usa':'us',
+  'canada':'ca','canadá':'ca',
+  'portugal':'pt',
+  'espanha':'es','spain':'es','espana':'es','españa':'es',
+  'franca':'fr','france':'fr','franca':'fr',
+  'italia':'it','italy':'it','itália':'it',
+  'alemanha':'de','germany':'de',
+  'reino unido':'gb','united kingdom':'gb','inglaterra':'gb','england':'gb',
+  'holanda':'nl','netherlands':'nl','paises baixos':'nl',
+  'belgica':'be','belgium':'be','bélgica':'be',
+  'suica':'ch','switzerland':'ch','suíça':'ch',
+  'austria':'at','áustria':'at',
+  'grecia':'gr','greece':'gr','grécia':'gr',
+  'croacia':'hr','croatia':'hr','croácia':'hr',
+  'polonia':'pl','poland':'pl','polônia':'pl',
+  'hungria':'hu','hungary':'hu',
+  'romenia':'ro','romania':'ro','romênia':'ro','roménia':'ro',
+  'bulgaria':'bg','bulgária':'bg',
+  'servia':'rs','serbia':'rs','sérvia':'rs',
+  'eslovaquia':'sk','slovakia':'sk','eslováquia':'sk',
+  'eslovenia':'si','slovenia':'si','eslovênia':'si',
+  'chequia':'cz','chéquia':'cz','czech republic':'cz','czechia':'cz',
+  'tchequia':'cz','tchéquia':'cz','republica tcheca':'cz','republica checa':'cz',
+  'suecia':'se','sweden':'se','suécia':'se',
+  'noruega':'no','norway':'no',
+  'dinamarca':'dk','denmark':'dk',
+  'finlandia':'fi','finland':'fi','finlândia':'fi',
+  'irlanda':'ie','ireland':'ie',
+  'russia':'ru','rússia':'ru',
+  'ucrania':'ua','ukraine':'ua','ucrânia':'ua',
+  'turquia':'tr','turkey':'tr',
+  'vaticano':'va','vatican city':'va','cidade do vaticano':'va',
+  'luxemburgo':'lu','luxembourg':'lu',
+  'monaco':'mc','mônaco':'mc',
+  'andorra':'ad',
+  'islandia':'is','iceland':'is','islândia':'is',
+  'albania':'al','albânia':'al',
+  'kosovo':'xk',
+  'montenegro':'me',
+  'bosnia':'ba','bósnia':'ba','bosnia e herzegovina':'ba',
+  'macedonia':'mk','macedônia':'mk','macedonia do norte':'mk',
+  'moldova':'md','moldávia':'md','moldavia':'md',
+  'bielorrussia':'by','belarus':'by','bielorrússia':'by',
+  'letonia':'lv','latvia':'lv','letônia':'lv',
+  'lituania':'lt','lithuania':'lt','lituânia':'lt',
+  'estonia':'ee','estônia':'ee',
+  'chipre':'cy','cyprus':'cy',
+  'malta':'mt',
+  'georgia':'ge','geórgia':'ge',
+  'armênia':'am','armenia':'am',
+  'azerbaijao':'az','azerbaijan':'az','azerbaijão':'az',
+  'japao':'jp','japan':'jp','japão':'jp',
+  'china':'cn',
+  'coreia do sul':'kr','south korea':'kr',
+  'tailandia':'th','thailand':'th','tailândia':'th',
+  'vietna':'vn','vietnam':'vn','vietnã':'vn',
+  'indonesia':'id','indonésia':'id',
+  'malasia':'my','malaysia':'my','malásia':'my',
+  'singapura':'sg','singapore':'sg',
+  'india':'in','índia':'in',
+  'nepal':'np',
+  'filipinas':'ph','philippines':'ph',
+  'camboja':'kh','cambodia':'kh',
+  'emirados arabes unidos':'ae','emirados árabes unidos':'ae','uae':'ae',
+  'qatar':'qa',
+  'israel':'il',
+  'jordania':'jo','jordan':'jo','jordânia':'jo',
+  'arabia saudita':'sa','saudi arabia':'sa','arábia saudita':'sa',
+  'mongolia':'mn','mongólia':'mn',
+  'myanmar':'mm',
+  'laos':'la',
+  'africa do sul':'za','south africa':'za','áfrica do sul':'za',
+  'marrocos':'ma','morocco':'ma',
+  'egito':'eg','egypt':'eg',
+  'quenia':'ke','kenya':'ke','quênia':'ke',
+  'tanzania':'tz','tanzânia':'tz',
+  'zimbabue':'zw','zimbabwe':'zw','zimbábue':'zw',
+  'botswana':'bw','botsuana':'bw',
+  'namibia':'na','namíbia':'na',
+  'angola':'ao',
+  'zambia':'zm','zâmbia':'zm',
+  'mocambique':'mz','moçambique':'mz','mozambique':'mz',
+  'ruanda':'rw','rwanda':'rw',
+  'uganda':'ug',
+  'nigeria':'ng','nigéria':'ng',
+  'gana':'gh','ghana':'gh',
+  'senegal':'sn',
+  'tunísia':'tn','tunisia':'tn',
+  'argélia':'dz','algeria':'dz','argelia':'dz',
+  'australia':'au','austrália':'au',
+  'nova zelandia':'nz','new zealand':'nz','nova zelândia':'nz',
+  'fiji':'fj',
+};
+
+// ── CACHE NOME → CÓDIGO ISO ──────────────────────────────────────────────
+// Construído a partir dos dados reais. Se uma place tem "Argentina" + code "ar",
+// todas as outras places com "Argentina" (sem code) também recebem key "ar".
+// Isso elimina duplicatas causadas por lugares com e sem countryCode.
+let nameToCode = {};
+
+function rebuildNameToCode() {
+  nameToCode = {};
+  places.forEach(p => {
+    if (p.countryCode && p.country) {
+      const k = norm(p.country);
+      if (!nameToCode[k]) nameToCode[k] = p.countryCode.toLowerCase();
+    }
+  });
+}
+
+// Retorna a chave canônica de um lugar para fins de deduplicação
+// Prioridade: 1) countryCode do place  2) cache dinâmico  3) mapa estático  4) nome normalizado
+function placeCountryKey(p) {
+  if (p.countryCode) return p.countryCode.toLowerCase();
+  const nk = norm(p.country||'');
+  if (!nk) return '';
+  return nameToCode[nk] || NAME_TO_CODE[nk] || nk;
+}
+
 // ── CONTAGEM ÚNICA DE PAÍSES ─────────────────────────────────────────────
-// Função canônica — usada em TODO o site (topbar + stats)
-// Prioridade: ISO code > nome normalizado
-// Mesmo país de dois usuários = contado 1x
 function uniqueCountries(places) {
   const seen = new Set();
   places.forEach(p => {
-    const k = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+    const k = placeCountryKey(p);
     if (k) seen.add(k);
   });
   return seen;
 }
 
-// Agrupa places por continente; retorna countryKey Sets e arrays de places
+// Agrupa places por continente (usa placeCountryKey para deduplicação correta)
 function groupByContinent(places) {
-  const contMap = {};   // continente → Set de countryKeys únicos
-  const placeMap = {};  // continente → todas as places (para drill-down)
+  const contMap  = {};  // continente → Set de countryKeys únicos
+  const placeMap = {};  // continente → places (para drill-down)
   places.forEach(p => {
     const ct = getContinent(p);
     if (!ct) return;
     if (!contMap[ct])  contMap[ct]  = new Set();
     if (!placeMap[ct]) placeMap[ct] = [];
-    const ck = p.countryCode ? p.countryCode.toLowerCase() : norm(p.country||'');
+    const ck = placeCountryKey(p);
     if (ck) contMap[ct].add(ck);
     placeMap[ct].push(p);
   });
@@ -1626,7 +1772,7 @@ function renderStats() {
     <div>
       <div class="sblock-title" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.textContent=this.textContent.includes('▼')?'Países cadastrados ▲':'Países cadastrados ▼'">Países cadastrados ▼</div>
       <div style="display:none;flex-wrap:wrap;gap:4px;margin-top:.5rem">
-        ${[...new Map(vis.map(p=>[p.countryCode?p.countryCode.toLowerCase():norm(p.country||''), p.country||'?'])).entries()]
+        ${[...new Map(vis.map(p=>[placeCountryKey(p), p.country||'?'])).entries()]
           .sort((a,b)=>a[1].localeCompare(b[1]))
           .map(([k,name])=>`<span title="key: ${k}" style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);color:var(--muted2)">${name}</span>`)
           .join('')}
@@ -1651,6 +1797,7 @@ const EMAIL_ORDER = ['svazfernandes@gmail.com', 'andreabalieiro@gmail.com'];
 
 function processSnap(docs) {
   places = docs.map(d => ({ id:d.id, ...d.data() }));
+  rebuildNameToCode(); // reconstrói cache nome→code com dados reais
   const emailByUid = {};
   places.forEach(p => { if (p.userId && p.userEmail) emailByUid[p.userId] = p.userEmail; });
   const allUids = [...new Set(places.map(p=>p.userId).filter(Boolean))];
