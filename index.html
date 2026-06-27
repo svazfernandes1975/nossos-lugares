@@ -272,13 +272,13 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
     <div class="fg">
       <div class="flbl">Categoria</div>
       <select class="fs" id="f-cat">
-        <option value="cidade">🏙️ Cidade</option>
-        <option value="ponto">🏛️ Ponto Turístico</option>
-        <option value="hardrock">🎸 Hard Rock Café</option>
-        <option value="praia">🏖️ Praia</option>
-        <option value="natureza">🏔️ Natureza</option>
-        <option value="restaurante">🍽️ Restaurante</option>
-        <option value="outro">📌 Outro</option>
+        <option value="cidade">Cidade</option>
+        <option value="ponto">Ponto Turístico</option>
+        <option value="hardrock">Hard Rock Café</option>
+        <option value="praia">Praia</option>
+        <option value="natureza">Natureza</option>
+        <option value="restaurante">Restaurante</option>
+        <option value="outro">Outro</option>
       </select>
     </div>
 
@@ -670,10 +670,17 @@ async function doGeo() {
     );
     geoData = await r.json();
     if (!geoData.length) { el.innerHTML='<div class="gr">Nenhum resultado</div>'; return; }
-    el.innerHTML = geoData.map((r,i) => `<div class="gr" onclick="pickGeo(${i})">
-      <strong>${r.display_name.split(',')[0]}</strong>
-      ${r.display_name.split(',').slice(1,3).join(',').trim()}
-    </div>`).join('');
+    el.innerHTML = geoData.map((r,i) => {
+      const addr = r.address || {};
+      const name = r.namedetails?.['name:pt'] || r.display_name.split(',')[0].trim();
+      const region = [
+        addr.state || addr.region || null,
+        addr.country || null
+      ].filter(Boolean).join(', ');
+      return `<div class="gr" onclick="pickGeo(${i})">
+        <strong>${name}</strong>${region ? region : ''}
+      </div>`;
+    }).join('');
   } catch(e) { el.innerHTML='<div class="gr">Erro na busca</div>'; }
 }
 
