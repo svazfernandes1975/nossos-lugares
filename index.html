@@ -402,6 +402,46 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   #exp-btn{display:none!important}
 }
 
+/* ── PAINEL LUGARES DO OUTRO ── */
+#other-panel{
+  position:fixed;top:0;left:-440px;width:420px;height:100vh;z-index:300;
+  background:var(--bg2);border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  transition:left .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:8px 0 32px rgba(0,0,0,.5);
+}
+#other-panel.open{left:0}
+.op-head{
+  padding:1.15rem 1.5rem;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:var(--bg3);
+}
+.op-title{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.op-filters{
+  padding:.6rem 1rem;border-bottom:1px solid var(--border);
+  display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;
+}
+.op-fbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s}
+.op-fbtn.on{background:var(--bg2);color:var(--text);border-color:var(--muted2)}
+.op-body{flex:1;overflow-y:auto;padding:.5rem 0}
+.op-body::-webkit-scrollbar{width:3px}
+.op-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.op-item{
+  display:flex;align-items:center;gap:10px;
+  padding:.6rem 1.25rem;border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.op-item:hover{background:var(--bg3)}
+.op-item.mine{opacity:.45}
+.op-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.op-info{flex:1;min-width:0}
+.op-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.op-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px}
+.op-add{font-family:'DM Mono',monospace;font-size:9px;padding:4px 10px;border-radius:12px;border:1px solid var(--green);color:var(--green);background:transparent;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.op-add:hover{background:var(--green);color:#000}
+.op-add:disabled{border-color:var(--border2);color:var(--muted);cursor:default}
+.op-add:disabled:hover{background:transparent;color:var(--muted)}
+
 /* ── VERSION ── */
 #ver{
   position:fixed;bottom:.6rem;right:.8rem;z-index:50;
@@ -465,6 +505,23 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 <div id="loading">carregando mapa...</div>
 
+<!-- PAINEL LUGARES DO OUTRO -->
+<div id="other-panel">
+  <div class="op-head">
+    <span class="op-title" id="op-title">Lugares de —</span>
+    <button class="pc" onclick="closeOtherPanel()">✕</button>
+  </div>
+  <div class="op-filters">
+    <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);align-self:center">Mostrar:</span>
+    <button class="op-fbtn on" id="opf-all"   onclick="setOpFilter('all')">Todos</button>
+    <button class="op-fbtn"    id="opf-add"   onclick="setOpFilter('add')">Só adicionar</button>
+    <button class="op-fbtn"    id="opf-mine"  onclick="setOpFilter('mine')">Já tenho</button>
+  </div>
+  <div class="op-body" id="op-body">
+    <div style="padding:2rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">Carregando…</div>
+  </div>
+</div>
+
 <!-- EXPLORADOR DE ÁREA -->
 <button id="exp-btn" onclick="toggleExplorer()" title="Explorar lugares na área">
   🔍 Explorar área
@@ -516,7 +573,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v68</div>
+<div id="ver">v70</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -541,6 +598,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
   <div class="autharea">
     <button id="about-btn" onclick="toggleAbout()" title="Sobre" style="border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">sobre</button>
+    <button id="other-btn" onclick="openOtherPanel()" title="Lugares do outro usuário" style="display:none;border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--u2)';this.style.color='var(--u2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">ver dela</button>
     <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores"><span id="theme-dot"></span></button>
     <img id="uavatar">
     <button id="authbtn" onclick="doAuth()">Entrar</button>
@@ -1870,6 +1928,19 @@ function processSnap(docs) {
   uids = allUids;
   renderMap();
   refreshLabels();
+
+  // Mostra botão do painel do outro usuário com nome correto
+  const otherBtn = document.getElementById('other-btn');
+  if (otherBtn && user && uids.length >= 2) {
+    const other = getOtherUser();
+    if (other) {
+      const n = other.name.split(' ')[0];
+      otherBtn.textContent = 'ver de ' + n;
+      otherBtn.style.display = 'inline-block';
+    }
+  } else if (otherBtn && !user) {
+    otherBtn.style.display = 'none';
+  }
   hideLoading();
   const rb = document.getElementById('reload-btn');
   if (rb) rb.style.display = 'none';
@@ -2342,7 +2413,118 @@ async function reverseGeocode(lat, lng, forceName) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// EXPLORADOR DE ÁREA — lista lugares OSM no viewport
+// PAINEL LUGARES DO OUTRO USUÁRIO
+// ═══════════════════════════════════════════════════════════════
+let opFilter = 'all';
+
+function openOtherPanel() {
+  if (!me) { toast('Faça login primeiro'); return; }
+  const other = getOtherUser();
+  if (!other) { toast('Outro usuário não encontrado'); return; }
+  document.getElementById('op-title').textContent = 'Lugares de ' + other.name.split(' ')[0];
+  document.getElementById('other-panel').classList.add('open');
+  renderOtherPanel();
+}
+
+function closeOtherPanel() {
+  document.getElementById('other-panel').classList.remove('open');
+}
+
+function setOpFilter(f) {
+  opFilter = f;
+  ['all','add','mine'].forEach(k => {
+    document.getElementById('opf-'+k).classList.toggle('on', k===f);
+  });
+  renderOtherPanel();
+}
+
+function renderOtherPanel() {
+  const other  = getOtherUser();
+  if (!other) return;
+  const body   = document.getElementById('op-body');
+  const CAT_COLORS_LOCAL = {cidade:'#e8e8e8',ponto:'#fbbf24',hardrock:'#ef4444',praia:'#22d3ee',natureza:'#4ade80',restaurante:'#fb923c',outro:'#a78bfa'};
+
+  // Lugares do outro, ordenados por nome
+  const otherPlaces = places
+    .filter(p => p.userId === other.uid)
+    .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  // Verifica quais já tenho
+  const filtered = otherPlaces.filter(p => {
+    const iMine = userHasPlace(me.uid, p.name, p.country);
+    if (opFilter === 'add')  return !iMine;
+    if (opFilter === 'mine') return  iMine;
+    return true;
+  });
+
+  if (!filtered.length) {
+    body.innerHTML = `<div style="padding:2rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">
+      ${opFilter==='add' ? 'Você já tem todos os lugares!' : opFilter==='mine' ? 'Nenhum lugar em comum ainda' : 'Nenhum lugar encontrado'}
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map(p => {
+    const iMine = userHasPlace(me.uid, p.name, p.country);
+    const col   = CAT_COLORS_LOCAL[p.category||'outro'] || '#888';
+    const yrs   = p.years?.length ? p.years.join(', ') : (p.year||'');
+    const meta  = [p.country, yrs].filter(Boolean).join(' · ');
+    return `<div class="op-item${iMine?' mine':''}">
+      <div class="op-dot" style="background:${col}"></div>
+      <div class="op-info">
+        <div class="op-name">${p.name}</div>
+        ${meta ? `<div class="op-meta">${meta}</div>` : ''}
+      </div>
+      <button class="op-add" ${iMine?'disabled title="Você já tem este lugar"':''} onclick="quickAddFromOther('${p.id}',this)">
+        ${iMine ? '✓ tenho' : '＋ adicionar'}
+      </button>
+    </div>`;
+  }).join('');
+
+  // Resumo no topo
+  const total = otherPlaces.length;
+  const tenho = otherPlaces.filter(p => userHasPlace(me.uid, p.name, p.country)).length;
+  const falta = total - tenho;
+  body.insertAdjacentHTML('afterbegin', `
+    <div style="padding:.5rem 1.25rem .3rem;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">
+      ${total} lugares · <span style="color:var(--green)">${tenho} em comum</span> · <span style="color:var(--amber)">${falta} para adicionar</span>
+    </div>`);
+}
+
+async function quickAddFromOther(id, btn) {
+  if (!me) return;
+  const place = places.find(p => p.id === id);
+  if (!place) return;
+  if (userHasPlace(me.uid, place.name, place.country)) {
+    toast('⚠️ Você já tem "' + place.name + '"!');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  const doc = {
+    name: place.name, city: place.city, country: place.country,
+    countryCode: place.countryCode||'', continent: place.continent||getContinent(place),
+    category: place.category, years: place.years||[], notes: place.notes||'',
+    rating: place.rating||0, lat: place.lat, lng: place.lng,
+    userId: me.uid, userName: me.displayName||me.email, userEmail: me.email,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db.collection('places').add(doc);
+    btn.textContent = '✓ tenho';
+    btn.closest('.op-item').classList.add('mine');
+    toast('✓ ' + place.name + ' adicionado!');
+    // Atualiza resumo sem re-renderizar tudo
+    renderOtherPanel();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '＋ adicionar';
+    toast('Erro: ' + e.message);
+  }
+}
 // ═══════════════════════════════════════════════════════════════
 let explorerOpen  = false;
 let explorerTimer = null;
@@ -2372,7 +2554,7 @@ async function fetchAreaPlaces() {
   list.innerHTML = '';
 
   const zoom = map.getZoom();
-  if (zoom < 8) {
+  if (zoom < 5) {
     status.textContent = '🔍 Dê mais zoom para explorar lugares';
     return;
   }
@@ -2386,7 +2568,7 @@ async function fetchAreaPlaces() {
   const query = `[out:json][timeout:15];(
     node["place"~"^(city|town|village|hamlet|municipality|isolated_dwelling|locality)$"]["name"](${s},${w},${n},${e});
     relation["place"~"^(city|town|village|hamlet|municipality)$"]["name"]["admin_level"](${s},${w},${n},${e});
-  );out center 31;`;
+  );out center 101;`;
 
   try {
     const r = await fetch('https://overpass-api.de/api/interpreter', {
@@ -2404,8 +2586,8 @@ async function fetchAreaPlaces() {
          return o.indexOf(a.type)-o.indexOf(b.type);
        });
 
-    // Mais de 30 → pede mais zoom
-    if (all.length > 30) {
+    // Mais de 100 → pede mais zoom
+    if (all.length > 100) {
       status.textContent = '🔍 Muitos lugares — dê mais zoom para refinar';
       return;
     }
