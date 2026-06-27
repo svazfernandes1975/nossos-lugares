@@ -8,11 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#07090f;--bg2:#0c1018;--bg3:#121824;
-  --border:#1a2236;--border2:#1f2d47;
-  --text:#dde4f0;--muted:#3a4d6a;--muted2:#6278a0;
-  --amber:#e8a93c;--blue:#60a5fa;--green:#4ade80;--coral:#fb7185;
-  --u1:#f97316;--u2:#a78bfa;
+  --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;
+  --border:#2a2a2a;--border2:#333;
+  --text:#e8e8e8;--muted:#555;--muted2:#888;
+  --amber:#fbbf24;--blue:#60a5fa;--green:#4ade80;--coral:#fb7185;
+  --u1:#f97316;--u2:#a78bfa; /* user colors: orange / purple */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
@@ -20,34 +20,31 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 /* ── MAP ── */
 #map{position:fixed;inset:0;z-index:1}
-.leaflet-control-attribution{background:rgba(7,9,15,.8)!important;color:#3a4d6a!important;font-size:9px!important}
-.leaflet-control-attribution a{color:#3a4d6a!important}
+.leaflet-control-attribution{background:rgba(10,10,10,.7)!important;color:#444!important;font-size:9px!important}
+.leaflet-control-attribution a{color:#555!important}
 
 /* ── TOPBAR ── */
 #topbar{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  background:rgba(7,9,15,.94);backdrop-filter:blur(20px);
+  background:rgba(10,10,10,.92);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border2);
-  padding:.75rem 1.5rem;
+  padding:.7rem 1.5rem;
   display:flex;align-items:center;gap:1rem;flex-wrap:nowrap;
-  box-shadow:0 1px 24px rgba(0,0,0,.5);
 }
-.brand{font-weight:800;font-size:1rem;white-space:nowrap;letter-spacing:-.02em}
+.brand{font-weight:800;font-size:1rem;white-space:nowrap;letter-spacing:-.01em}
 .brand em{color:var(--amber);font-style:normal}
-.brand span{color:var(--muted2);font-weight:400;font-size:.8rem;margin-left:2px;font-family:'DM Mono',monospace}
 
 .vtoggle{
-  display:flex;gap:2px;
+  display:flex;gap:3px;
   background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:3px;
   flex-shrink:0;
 }
 .vbtn{
-  font-family:'DM Mono',monospace;font-size:10px;padding:4px 11px;
+  font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;
   border-radius:16px;border:none;background:transparent;color:var(--muted2);
-  cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:.02em;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
 }
-.vbtn:hover{color:var(--text)}
-.vbtn.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.vbtn.on{background:var(--bg2);color:var(--text)}
 .vbtn.on.vu1{color:var(--u1)}
 .vbtn.on.vu2{color:var(--u2)}
 
@@ -70,24 +67,23 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 #fab{
   position:fixed;bottom:2rem;right:2rem;z-index:200;
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,var(--amber),#c8891a);
-  color:#000;border:none;font-size:1.4rem;font-weight:800;cursor:pointer;
+  background:var(--amber);color:#000;border:none;
+  font-size:1.5rem;font-weight:700;cursor:pointer;
   display:none;align-items:center;justify-content:center;
-  box-shadow:0 4px 24px rgba(232,169,60,.3),0 2px 8px rgba(0,0,0,.6);
+  box-shadow:0 4px 20px rgba(251,191,36,.4);
   transition:transform .2s,box-shadow .2s;
 }
-#fab:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 8px 32px rgba(232,169,60,.5),0 2px 8px rgba(0,0,0,.6)}
+#fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(251,191,36,.5)}
 #fab.vis{display:flex}
 
 /* ── CROSS STATS ── */
 #xstats{
   position:fixed;bottom:2rem;left:1.5rem;z-index:100;
-  background:rgba(7,9,15,.92);backdrop-filter:blur(16px);
+  background:rgba(10,10,10,.9);backdrop-filter:blur(12px);
   border:1px solid var(--border2);border-radius:12px;
   padding:.55rem 1rem;
   display:none;gap:1.25rem;
   font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
-  box-shadow:0 4px 16px rgba(0,0,0,.4);
 }
 #xstats.vis{display:flex}
 #xstats strong{color:var(--text)}
@@ -98,23 +94,18 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   background:var(--bg2);border-left:1px solid var(--border2);
   display:flex;flex-direction:column;
   transition:right .3s cubic-bezier(.4,0,.2,1);
-  box-shadow:-8px 0 32px rgba(0,0,0,.5);
 }
 #panel.open{right:0}
 
 .ph{
-  padding:1.15rem 1.5rem;border-bottom:1px solid var(--border2);
+  padding:1.1rem 1.5rem;border-bottom:1px solid var(--border2);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-  background:var(--bg3);
 }
-.pt{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
-.pc{background:none;border:none;color:var(--muted2);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s,background .15s}
-.pc:hover{color:var(--text);background:var(--border2)}
+.pt{font-size:.95rem;font-weight:700}
+.pc{background:none;border:none;color:var(--muted2);font-size:1.1rem;cursor:pointer;padding:3px 8px;border-radius:6px;transition:color .15s,background .15s}
+.pc:hover{color:var(--text);background:var(--bg3)}
 
-.pb{flex:1;overflow-y:auto;padding:1.15rem 1.5rem;display:flex;flex-direction:column;gap:.9rem}
-.pb::-webkit-scrollbar{width:3px}
-.pb::-webkit-scrollbar-track{background:transparent}
-.pb::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.pb{flex:1;overflow-y:auto;padding:1.1rem 1.5rem;display:flex;flex-direction:column;gap:.85rem}
 
 /* form */
 .flbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
@@ -201,62 +192,42 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .etitle{font-size:1.1rem;font-weight:700;color:var(--muted2);margin-bottom:.4rem}
 .esub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 
-/* ── LEGENDA / FILTRO ── */
+/* ── LEGENDA ── */
 #legend{
-  position:fixed;top:5rem;left:1rem;z-index:100;
-  background:rgba(7,9,15,.92);backdrop-filter:blur(16px);
-  border:1px solid var(--border2);border-radius:12px;
-  overflow:hidden;
-  box-shadow:0 4px 16px rgba(0,0,0,.4);
-  min-width:140px;
+  position:fixed;bottom:2rem;left:1.5rem;z-index:100;
+  background:rgba(10,10,10,.88);backdrop-filter:blur(12px);
+  border:1px solid var(--border2);border-radius:10px;
+  padding:.6rem .9rem;
+  display:flex;flex-direction:column;gap:4px;
 }
-#leg-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.5rem .75rem;cursor:pointer;
-  border-bottom:1px solid var(--border);
-  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
-  user-select:none;transition:color .15s;
-}
-#leg-head:hover{color:var(--text)}
-#leg-head span{font-size:9px;color:var(--muted);margin-left:4px;letter-spacing:.05em}
-#leg-items{display:flex;flex-direction:column}
 .leg-item{
-  display:flex;align-items:center;gap:8px;
-  padding:.35rem .75rem;
-  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
-  cursor:pointer;transition:background .12s,color .12s;
-  user-select:none;
-  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);
+  white-space:nowrap;
 }
-.leg-item:last-child{border-bottom:none}
-.leg-item:hover{background:var(--bg3);color:var(--text)}
-.leg-item.active{color:var(--text)}
-.leg-item.inactive{opacity:.35}
-.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+.leg-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  border:1px solid rgba(255,255,255,.15);
+}
 
 /* ── STATS MODAL ── */
 #stats-modal{
   position:fixed;inset:0;z-index:400;
-  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
   display:none;align-items:center;justify-content:center;padding:1rem;
 }
 #stats-modal.open{display:flex}
 .smodal{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
   width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
   display:flex;flex-direction:column;
-  box-shadow:0 24px 64px rgba(0,0,0,.7);
 }
-.smodal::-webkit-scrollbar{width:3px}
-.smodal::-webkit-scrollbar-track{background:transparent}
-.smodal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 .smodal-h{
-  padding:1.15rem 1.5rem;border-bottom:1px solid var(--border2);
+  padding:1.1rem 1.5rem;border-bottom:1px solid var(--border2);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
   position:sticky;top:0;background:var(--bg2);z-index:1;
-  backdrop-filter:blur(8px);
 }
-.smodal-title{font-size:.95rem;font-weight:700;letter-spacing:-.01em}
+.smodal-title{font-size:.95rem;font-weight:700}
 .smodal-body{padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1.5rem}
 .sblock-title{
   font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);
@@ -357,24 +328,18 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   </div>
 </div>
 
-<!-- LEGENDA / FILTRO -->
+<!-- LEGENDA -->
 <div id="legend">
-  <div id="leg-head" onclick="toggleLegend()">
-    Filtrar por tipo<span id="leg-arrow">▲</span>
-  </div>
-  <div id="leg-items">
-    <div class="leg-item active" data-cat="cidade"       onclick="toggleCat('cidade')"><span class="leg-dot" style="background:#e8e8e8"></span>Cidade</div>
-    <div class="leg-item active" data-cat="ponto"        onclick="toggleCat('ponto')"><span class="leg-dot" style="background:#fbbf24"></span>Ponto Turístico</div>
-    <div class="leg-item active" data-cat="hardrock"     onclick="toggleCat('hardrock')"><span class="leg-dot" style="background:#ef4444"></span>Hard Rock</div>
-    <div class="leg-item active" data-cat="praia"        onclick="toggleCat('praia')"><span class="leg-dot" style="background:#22d3ee"></span>Praia</div>
-    <div class="leg-item active" data-cat="natureza"     onclick="toggleCat('natureza')"><span class="leg-dot" style="background:#4ade80"></span>Natureza</div>
-    <div class="leg-item active" data-cat="restaurante"  onclick="toggleCat('restaurante')"><span class="leg-dot" style="background:#fb923c"></span>Restaurante</div>
-    <div class="leg-item active" data-cat="outro"        onclick="toggleCat('outro')"><span class="leg-dot" style="background:#a78bfa"></span>Outro</div>
-  </div>
+  <div class="leg-item"><span class="leg-dot" style="background:#e8e8e8"></span>Cidade</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#fbbf24"></span>Ponto turístico</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#ef4444"></span>Hard Rock</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#22d3ee"></span>Praia</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#4ade80"></span>Natureza</div>
+  <div class="leg-item"><span class="leg-dot" style="background:#fb923c"></span>Restaurante</div>
 </div>
 
 <!-- VERSION -->
-<div id="ver">v15</div>
+<div id="ver">v14</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -422,7 +387,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 <!-- PANEL -->
 <div id="panel">
   <div class="ph">
-    <span class="pt" id="panel-title">📍 Adicionar lugar</span>
+    <span class="pt">📍 Adicionar lugar</span>
     <button class="pc" onclick="closePanel()">✕</button>
   </div>
   <div class="pb">
@@ -470,17 +435,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
     </div>
 
     <div class="fg"><div class="flbl">Anos visitados (opcional)</div><input class="fi" id="f-year" placeholder="ex: 2018, 2023 · separe por vírgula"></div>
-    <div class="fg">
-      <div class="flbl">Avaliação (opcional)</div>
-      <div id="rating-stars" style="display:flex;gap:6px;margin-top:4px">
-        <span class="star" data-v="1" onclick="setRating(1)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
-        <span class="star" data-v="2" onclick="setRating(2)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
-        <span class="star" data-v="3" onclick="setRating(3)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
-        <span class="star" data-v="4" onclick="setRating(4)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
-        <span class="star" data-v="5" onclick="setRating(5)" style="font-size:1.3rem;cursor:pointer;opacity:.4;transition:opacity .15s">★</span>
-      </div>
-      <input type="hidden" id="f-rating" value="0">
-    </div>
     <div class="fg"><div class="flbl">Observações (opcional)</div><textarea class="fta" id="f-notes" placeholder="Memórias, avaliação, dicas…"></textarea></div>
 
     <button class="bsave" id="bsave" onclick="savePlace()" disabled>Salvar lugar</button>
@@ -516,18 +470,15 @@ const auth = firebase.auth();
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let me           = null;
-let places       = [];
-let view         = 'all';
-let pending      = null;
-let markers      = {};
-let stimer       = null;
-let geoData      = [];
+let me       = null;       // current Firebase user
+let places   = [];         // all Firestore places
+let view     = 'all';      // 'all' | 'u1' | 'u2'
+let pending  = null;       // geocoding result awaiting save
+let markers  = {};         // placeId → Leaflet marker
+let stimer   = null;       // search debounce
+let geoData  = [];         // last geocoding results
 let map;
-let uids         = [];
-let editingId    = null;  // id do place sendo editado (null = novo)
-let legendOpen   = true;
-let activeCategories = new Set(['cidade','ponto','hardrock','praia','natureza','restaurante','outro']);
+let uids     = [];         // ordered user UIDs [first, second]
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -723,39 +674,32 @@ function makePopup(place) {
     praia:'Praia', natureza:'Natureza', restaurante:'Restaurante', outro:'Outro'
   }[place.category] || place.category;
 
-  const canEdit = me !== null;
+  const canDel = me !== null;
   const loc = [
     place.city && place.city !== place.name ? place.city : null,
     place.country, place.continent
   ].filter(Boolean).join(' · ');
-  const yrs = place.years?.length ? place.years.join(' · ') : place.year || null;
-  const stars = place.rating ? '★'.repeat(place.rating) + '☆'.repeat(5-place.rating) : null;
 
   return `<div class="pbox">
     <div style="font-family:'DM Mono',monospace;font-size:10px;color:${c};text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">${cat}</div>
     <div class="pname">${place.name}</div>
     ${loc ? `<div class="pmeta" style="margin-top:4px">${loc}</div>` : ''}
-    ${yrs ? `<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>` : ''}
-    ${stars ? `<div style="font-size:11px;color:var(--amber);margin-top:4px;letter-spacing:1px">${stars}</div>` : ''}
+    ${(()=>{const yrs=place.years?.length?place.years.join(' · '):place.year||null;return yrs?`<div class="pmeta" style="margin-top:3px">Visitado em ${yrs}</div>`:''})()}
     ${place.notes ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;color:#aaa;line-height:1.6;border-left:2px solid ${c}55">${place.notes}</div>` : ''}
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px">
       <span class="puser" style="background:${c}22;color:${c};border:1px solid ${c}44">${uName(place)}</span>
-      <div style="display:flex;gap:5px">
-        ${canEdit ? `<button class="pdel" style="margin:0;width:auto;padding:3px 10px;color:var(--blue);border-color:#1e3a5f" onclick="editPlace('${place.id}')">Editar</button>` : ''}
-        ${canEdit ? `<button class="pdel" style="margin:0;width:auto;padding:3px 10px" onclick="delPlace('${place.id}')">Remover</button>` : ''}
-      </div>
+      ${canDel ? `<button class="pdel" style="margin:0;width:auto;padding:3px 12px" onclick="delPlace('${place.id}')">Remover</button>` : ''}
     </div>
   </div>`;
 }
 
 function renderMap() {
+  // Determine visible places
   let vis = places;
   if (view === 'u1') vis = places.filter(p => p.userId === uids[0]);
   if (view === 'u2') vis = places.filter(p => p.userId === uids[1]);
 
-  // filtro por categoria
-  vis = vis.filter(p => activeCategories.has(p.category || 'outro'));
-
+  // Remove all markers
   Object.values(markers).forEach(m => map.removeLayer(m));
   markers = {};
 
@@ -1135,85 +1079,13 @@ function pickGeo(i) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// EDITAR LUGAR
-// ═══════════════════════════════════════════════════════════════
-function editPlace(id) {
-  if (!me) return;
-  const place = places.find(p => p.id === id);
-  if (!place) return;
-  map.closePopup();
-
-  editingId = id;
-  pending = { lat: place.lat, lng: place.lng, name: place.name, city: place.city, country: place.country };
-
-  document.getElementById('panel-title').textContent = '✏️ Editar lugar';
-  document.getElementById('si').value       = place.name;
-  document.getElementById('f-cat').value    = place.category || 'cidade';
-  document.getElementById('f-country').value = place.country || '';
-  document.getElementById('f-cont').value   = place.continent || '';
-  document.getElementById('f-year').value   = place.years?.length ? place.years.join(', ') : (place.year || '');
-  document.getElementById('f-notes').value  = place.notes || '';
-  setRating(place.rating || 0);
-
-  document.getElementById('ln').textContent = place.name;
-  document.getElementById('lm').textContent = [place.city, place.country].filter(Boolean).join(', ');
-  document.getElementById('lprev').style.display = 'block';
-  document.getElementById('bsave').disabled = false;
-  document.getElementById('bsave').textContent = 'Salvar alterações';
-
-  document.getElementById('panel').classList.add('open');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RATING
-// ═══════════════════════════════════════════════════════════════
-function setRating(val) {
-  document.getElementById('f-rating').value = val;
-  document.querySelectorAll('.star').forEach(s => {
-    const v = parseInt(s.dataset.v);
-    s.style.color   = v <= val ? 'var(--amber)' : 'var(--muted2)';
-    s.style.opacity = v <= val ? '1' : '.3';
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FILTRO POR CATEGORIA
-// ═══════════════════════════════════════════════════════════════
-function toggleCat(cat) {
-  if (activeCategories.has(cat)) {
-    // se só restar 1, não deixa desligar
-    if (activeCategories.size <= 1) { toast('Pelo menos uma categoria deve estar ativa'); return; }
-    activeCategories.delete(cat);
-  } else {
-    activeCategories.add(cat);
-  }
-  // atualiza visual da legenda
-  document.querySelectorAll('.leg-item').forEach(el => {
-    const c = el.dataset.cat;
-    el.classList.toggle('active',   activeCategories.has(c));
-    el.classList.toggle('inactive', !activeCategories.has(c));
-  });
-  renderMap();
-}
-
-function toggleLegend() {
-  legendOpen = !legendOpen;
-  const items = document.getElementById('leg-items');
-  const arrow = document.getElementById('leg-arrow');
-  items.style.display = legendOpen ? 'flex' : 'none';
-  arrow.textContent = legendOpen ? '▲' : '▼';
-}
-
-// ═══════════════════════════════════════════════════════════════
 // SAVE
 // ═══════════════════════════════════════════════════════════════
 async function savePlace() {
   if (!me || !pending) return;
   const btn = document.getElementById('bsave');
-  btn.disabled = true;
-  btn.textContent = editingId ? 'Atualizando…' : 'Salvando…';
+  btn.disabled = true; btn.textContent = 'Salvando…';
 
-  const rating = parseInt(document.getElementById('f-rating').value) || 0;
   const doc = {
     name:      pending.name,
     city:      pending.city,
@@ -1222,7 +1094,6 @@ async function savePlace() {
     category:  document.getElementById('f-cat').value,
     years:     document.getElementById('f-year').value.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900),
     notes:     document.getElementById('f-notes').value.trim(),
-    rating:    rating,
     lat:       pending.lat,
     lng:       pending.lng,
     userId:    me.uid,
@@ -1232,18 +1103,13 @@ async function savePlace() {
   };
 
   try {
-    if (editingId) {
-      await db.collection('places').doc(editingId).update(doc);
-      toast('✓ ' + doc.name + ' atualizado!');
-    } else {
-      await db.collection('places').add(doc);
-      toast('✓ ' + doc.name + ' adicionado!');
-    }
+    await db.collection('places').add(doc);
+    toast('✓ ' + doc.name + ' adicionado!');
     closePanel();
   } catch(e) {
     toast('Erro: ' + e.message);
     btn.disabled = false;
-    btn.textContent = editingId ? 'Salvar alterações' : 'Salvar lugar';
+    btn.textContent = 'Salvar lugar';
   }
 }
 
@@ -1259,22 +1125,17 @@ function openPanel() {
 
 function closePanel() {
   document.getElementById('panel').classList.remove('open');
-  resetForm();
 }
 
 function resetForm() {
-  editingId = null;
   pending = null;
   ['si','f-country','f-year','f-notes'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('f-cat').value   = 'cidade';
-  document.getElementById('f-cont').value  = '';
-  document.getElementById('f-rating').value = '0';
-  setRating(0);
+  document.getElementById('f-cat').value  = 'cidade';
+  document.getElementById('f-cont').value = '';
   document.getElementById('gres').style.display  = 'none';
   document.getElementById('lprev').style.display = 'none';
   document.getElementById('bsave').disabled = true;
   document.getElementById('bsave').textContent = 'Salvar lugar';
-  document.getElementById('panel-title').textContent = '📍 Adicionar lugar';
 }
 
 // ═══════════════════════════════════════════════════════════════
