@@ -444,7 +444,7 @@ function uName(place) { return (place.userName || '').split(' ')[0] || 'Usuário
 
 function makeIcon(place) {
   const c = uColor(place.userId);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 28 40">
     <path d="M14 0C6.27 0 0 6.27 0 14c0 5.26 2.9 9.84 7.18 12.28L14 40l6.82-13.72C25.1 23.84 28 19.26 28 14 28 6.27 21.73 0 14 0z"
       fill="${c}" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
     <circle cx="14" cy="14" r="6" fill="rgba(255,255,255,0.88)"/>
@@ -453,9 +453,9 @@ function makeIcon(place) {
   return L.divIcon({
     className: '',
     html: svg,
-    iconSize:   [28, 40],
-    iconAnchor: [14, 40],
-    popupAnchor:[0, -42],
+    iconSize:   [20, 28],
+    iconAnchor: [10, 28],
+    popupAnchor:[0, -30],
   });
 }
 
@@ -484,7 +484,6 @@ function makePopup(place) {
     </div>
   </div>`;
 }
-}
 
 function renderMap() {
   // Determine visible places
@@ -500,7 +499,7 @@ function renderMap() {
   vis.forEach(p => {
     if (isNaN(p.lat) || isNaN(p.lng)) return;
     const m = L.marker([p.lat, p.lng], { icon: makeIcon(p) });
-    m.bindPopup(makePopup(p), { maxWidth:320, minWidth:260 });
+    m.bindPopup(makePopup(p), { maxWidth:220, minWidth:200 });
     m.addTo(map);
     markers[p.id] = m;
   });
@@ -522,7 +521,7 @@ function hav(la1, lo1, la2, lo2) {
 
 function updateStats(vis) {
   const countries  = new Set(vis.map(p=>p.country).filter(Boolean));
-  const continents = new Set(vis.map(p=>p.continent).filter(Boolean));
+  const continents = new Set(vis.map(p=>p.continent || guessContinent(p.country)).filter(Boolean));
   const cities     = new Set(vis.map(p=>p.city||p.name).filter(Boolean));
   const km = Math.round(vis.reduce((s,p)=>s+hav(SP[0],SP[1],p.lat,p.lng),0));
 
@@ -666,7 +665,7 @@ async function doGeo() {
   el.innerHTML = '<div class="gr">Buscando...</div>';
   try {
     const r = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=pt`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&namedetails=1&accept-language=pt`,
       { headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
     );
     geoData = await r.json();
@@ -681,7 +680,8 @@ async function doGeo() {
 function pickGeo(i) {
   const r = geoData[i];
   const addr = r.address || {};
-  const name    = r.display_name.split(',')[0].trim();
+  const ptName = r.namedetails?.['name:pt'];
+  const name    = ptName || r.display_name.split(',')[0].trim();
   const city    = addr.city || addr.town || addr.village || addr.municipality || name;
   const country = addr.country || r.display_name.split(',').slice(-1)[0].trim();
 
