@@ -453,7 +453,6 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 @media(max-width:640px){
   #map-search{
-    top:calc(6.2rem + .4rem);
     width:calc(100vw - 1.5rem);
     left:50%;transform:translateX(-50%);
   }
@@ -762,7 +761,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v80</div>
+<div id="ver">v81</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -3154,8 +3153,18 @@ function onMapMove() {
   explorerTimer = setTimeout(fetchAreaPlaces, 800);
 }
 
+function positionMapSearch() {
+  const tb = document.getElementById('topbar');
+  const ms = document.getElementById('map-search');
+  if (!tb || !ms) return;
+  const h = tb.getBoundingClientRect().bottom;
+  ms.style.top = (h + 8) + 'px';
+}
+
 initTheme();
 initMap();
+setTimeout(positionMapSearch, 300);
+window.addEventListener('resize', positionMapSearch);
 
 map.on('contextmenu', function(e) {
   reverseGeocode(e.latlng.lat, e.latlng.lng);
