@@ -761,7 +761,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v81</div>
+<div id="ver">v82</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2739,16 +2739,38 @@ function goToGeoResult(idx) {
   const r = msGeoResults[idx];
   if (!r) return;
   closeMapSearch();
-  const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-  const zoom = r.type==='city'||r.type==='administrative' ? 10 : 13;
+  const lat  = parseFloat(r.lat);
+  const lng  = parseFloat(r.lon);
+  const name = r.display_name.split(',')[0].trim();
+  const sub  = r.display_name.split(',').slice(1,3).map(s=>s.trim()).filter(Boolean).join(', ');
+  const zoom = ['city','administrative','town'].includes(r.type) ? 10 : 13;
+
   map.setView([lat, lng], zoom, {animate:true});
-  // Marcador temporário
-  const tmp = L.marker([lat, lng]).addTo(map);
-  tmp.bindPopup(`<div style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 2px">
-    <strong>${r.display_name.split(',')[0]}</strong><br>
-    <span style="color:#888;font-size:9px">${r.display_name.split(',').slice(1,3).join(',')}</span>
-  </div>`).openPopup();
-  setTimeout(() => map.removeLayer(tmp), 8000);
+
+  // Remove marcador temporário anterior se existir
+  if (window._geoTmpMarker) { try { map.removeLayer(window._geoTmpMarker); } catch(e){} }
+
+  const addBtn = me
+    ? `<button onclick="addFromGeoPin(${lat},${lng},'${name.replace(/'/g,"\\'")}');map.closePopup()" style="margin-top:8px;width:100%;padding:6px 0;border-radius:7px;border:none;background:var(--amber);color:#000;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;cursor:pointer">＋ Adicionar lugar</button>`
+    : `<div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)">Faça login para adicionar</div>`;
+
+  window._geoTmpMarker = L.marker([lat, lng]).addTo(map);
+  window._geoTmpMarker.bindPopup(`
+    <div style="font-family:'DM Mono',monospace;padding:4px 2px;min-width:160px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text)">${name}</div>
+      ${sub ? `<div style="font-size:9px;color:var(--muted2);margin-top:3px">${sub}</div>` : ''}
+      ${addBtn}
+    </div>`, {maxWidth:220}).openPopup();
+
+  // Remove automaticamente após 30s se não interagir
+  setTimeout(() => {
+    if (window._geoTmpMarker) { try { map.removeLayer(window._geoTmpMarker); window._geoTmpMarker=null; } catch(e){} }
+  }, 30000);
+}
+
+function addFromGeoPin(lat, lng, name) {
+  toast('🔍 Identificando ' + name + '…');
+  reverseGeocode(lat, lng, name);
 }
 
 function onMapSearchKey(e) {
