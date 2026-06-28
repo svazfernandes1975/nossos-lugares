@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
+  --tbh:3.8rem;  /* altura do topbar desktop */
   --bg:#07090f;--bg2:#0c1018;--bg3:#121824;
   --border:#1a2236;--border2:#1f2d47;
   --text:#dde4f0;--muted:#3a4d6a;--muted2:#6278a0;
@@ -402,6 +403,116 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   #exp-btn{display:none!important}
 }
 
+/* ── BUSCA DO MAPA ── */
+#map-search{
+  position:fixed;
+  top:calc(var(--tbh, 4rem) + .6rem);
+  left:50%;transform:translateX(-50%);
+  z-index:200;width:360px;max-width:calc(100vw - 2rem);
+}
+#ms-wrap{
+  position:relative;
+  background:rgba(7,9,15,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--border2);border-radius:12px;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+  transition:border-color .15s;
+}
+#ms-wrap:focus-within{border-color:var(--amber)}
+#ms-input-row{display:flex;align-items:center;padding:.5rem .85rem;gap:.6rem}
+#ms-icon{font-size:13px;color:var(--muted2);flex-shrink:0}
+#ms-input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:.85rem;min-width:0;
+}
+#ms-input::placeholder{color:var(--muted2);font-size:.82rem}
+#ms-clear{background:none;border:none;color:var(--muted2);cursor:pointer;padding:0;font-size:.9rem;display:none;line-height:1}
+#ms-clear:hover{color:var(--text)}
+#ms-results{
+  border-top:1px solid var(--border);
+  max-height:320px;overflow-y:auto;display:none;
+  border-radius:0 0 12px 12px;
+}
+#ms-results::-webkit-scrollbar{width:3px}
+#ms-results::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.ms-section{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;
+  padding:.45rem .85rem .25rem;
+}
+.ms-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.55rem .85rem;cursor:pointer;transition:background .1s;
+  border-bottom:1px solid var(--border);
+}
+.ms-item:last-child{border-bottom:none}
+.ms-item:hover{background:var(--bg3)}
+.ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ms-name{font-size:.82rem;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2)}
+.ms-loading{padding:.75rem .85rem;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);text-align:center}
+
+@media(max-width:640px){
+  #map-search{top:calc(var(--tbh,5rem) + .4rem);width:calc(100vw - 1.5rem)}
+}
+
+/* ── VISÃO LISTA ── */
+#list-modal{
+  position:fixed;inset:0;z-index:400;
+  background:var(--bg);
+  display:none;flex-direction:column;
+}
+#list-modal.open{display:flex}
+.lm-head{
+  padding:.85rem 1.5rem;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:1rem;flex-shrink:0;
+  background:var(--bg2);
+}
+.lm-title{font-size:.9rem;font-weight:700;flex-shrink:0}
+.lm-search{
+  flex:1;padding:.4rem .8rem;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:8px;color:var(--text);
+  font-family:'DM Mono',monospace;font-size:11px;
+}
+.lm-search::placeholder{color:var(--muted2)}
+.lm-search:focus{outline:none;border-color:var(--amber)}
+.lm-filters{
+  padding:.5rem 1.5rem;border-bottom:1px solid var(--border);
+  display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;
+  background:var(--bg2);
+}
+.lm-fbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s}
+.lm-fbtn.on{background:var(--amber);color:#000;border-color:var(--amber)}
+.lm-body{flex:1;overflow-y:auto}
+.lm-body::-webkit-scrollbar{width:4px}
+.lm-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.lm-table{width:100%;border-collapse:collapse}
+.lm-table th{
+  position:sticky;top:0;background:var(--bg3);
+  font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted2);
+  padding:.6rem 1rem;text-align:left;
+  border-bottom:1px solid var(--border2);
+  cursor:pointer;white-space:nowrap;user-select:none;
+}
+.lm-table th:hover{color:var(--text)}
+.lm-table th.sorted{color:var(--amber)}
+.lm-table td{
+  padding:.65rem 1rem;border-bottom:1px solid var(--border);
+  font-size:.82rem;vertical-align:middle;
+}
+.lm-table tr:hover td{background:var(--bg3)}
+.lm-table tr.editing td{background:var(--bg2)}
+.lm-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+.lm-stars{color:var(--amber);letter-spacing:1px;font-size:11px}
+.lm-actions{display:flex;gap:5px;white-space:nowrap}
+.lm-btn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s}
+.lm-btn:hover{color:var(--text);border-color:var(--muted2)}
+.lm-btn.edit{color:var(--blue);border-color:#1e3a5f}
+.lm-btn.del{color:#ef4444;border-color:#3a1f1f}
+.lm-empty{padding:3rem;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.lm-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);white-space:nowrap}
+
 /* ── PAINEL LUGARES DO OUTRO ── */
 #other-panel{
   position:fixed;top:0;left:-440px;width:420px;height:100vh;z-index:300;
@@ -505,6 +616,61 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 
 <div id="loading">carregando mapa...</div>
 
+<!-- BUSCA DO MAPA -->
+<div id="map-search">
+  <div id="ms-wrap">
+    <div id="ms-input-row">
+      <span id="ms-icon">🔍</span>
+      <input id="ms-input" placeholder="Buscar lugar, cidade, país…" autocomplete="off"
+        oninput="onMapSearchInput()" onkeydown="onMapSearchKey(event)">
+      <button id="ms-clear" onclick="clearMapSearch()">✕</button>
+    </div>
+    <div id="ms-results"></div>
+  </div>
+</div>
+
+<!-- VISÃO LISTA -->
+<div id="list-modal">
+  <div class="lm-head">
+    <span class="lm-title">📋 Meus lugares</span>
+    <input class="lm-search" id="lm-search" placeholder="Buscar por nome…" oninput="renderListModal()">
+    <span class="lm-count" id="lm-count"></span>
+    <button class="pc" onclick="closeListModal()">✕</button>
+  </div>
+  <div class="lm-filters" id="lm-filters">
+    <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);align-self:center">Usuário:</span>
+    <button class="lm-fbtn on" id="lmf-all" onclick="setLmUser('all')">Todos</button>
+    <button class="lm-fbtn"    id="lmf-u1"  onclick="setLmUser('u1')" style="display:none">—</button>
+    <button class="lm-fbtn"    id="lmf-u2"  onclick="setLmUser('u2')" style="display:none">—</button>
+    <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);align-self:center;margin-left:.5rem">Tipo:</span>
+    <button class="lm-fbtn on" id="lmf-cat-all"  onclick="setLmCat('')">Todos</button>
+    <button class="lm-fbtn" onclick="setLmCat('cidade')">🏙 Cidade</button>
+    <button class="lm-fbtn" onclick="setLmCat('ponto')">🏛 Ponto</button>
+    <button class="lm-fbtn" onclick="setLmCat('hardrock')">🎸 Hard Rock</button>
+    <button class="lm-fbtn" onclick="setLmCat('praia')">🏖 Praia</button>
+    <button class="lm-fbtn" onclick="setLmCat('natureza')">🏔 Natureza</button>
+    <button class="lm-fbtn" onclick="setLmCat('restaurante')">🍽 Restaurante</button>
+    <button class="lm-fbtn" onclick="setLmCat('outro')">📌 Outro</button>
+  </div>
+  <div class="lm-body">
+    <table class="lm-table">
+      <thead>
+        <tr>
+          <th onclick="setLmSort('name')"    id="lmth-name">Nome</th>
+          <th onclick="setLmSort('city')"    id="lmth-city">Cidade</th>
+          <th onclick="setLmSort('country')" id="lmth-country">País</th>
+          <th onclick="setLmSort('cat')"     id="lmth-cat">Tipo</th>
+          <th onclick="setLmSort('years')"   id="lmth-years">Anos</th>
+          <th onclick="setLmSort('rating')"  id="lmth-rating">Aval.</th>
+          <th style="cursor:default">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="lm-tbody"></tbody>
+    </table>
+    <div id="lm-empty" class="lm-empty" style="display:none">Nenhum lugar encontrado</div>
+  </div>
+</div>
+
 <!-- PAINEL LUGARES DO OUTRO -->
 <div id="other-panel">
   <div class="op-head">
@@ -573,7 +739,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v71</div>
+<div id="ver">v75</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -590,6 +756,10 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
     <div class="sitem"><div class="sval" id="st-k" style="color:var(--blue)">0</div><div class="slbl">continentes</div></div>
     <div class="sitem"><div class="sval" id="st-p" style="color:var(--green)">0</div><div class="slbl">cidades</div></div>
     <div class="sitem"><div class="sval" id="st-m" style="color:var(--coral)">0</div><div class="slbl">km</div></div>
+    <div onclick="openListModal()" style="cursor:pointer;border-left:1px solid var(--border2);padding-left:1.5rem;display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:800;line-height:1;color:var(--amber)">☰</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em">lista</div>
+    </div>
     <div onclick="openStats()" style="cursor:pointer;border-left:1px solid var(--border2);padding-left:1.5rem;display:flex;flex-direction:column;align-items:center;gap:3px">
       <div style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:800;line-height:1;color:var(--amber)">↗</div>
       <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em">stats</div>
@@ -1090,12 +1260,14 @@ function makeIcon(place) {
 }
 
 // ─── helper: retorna dados do outro usuário ───────────────────
-// ─── verifica se usuário já tem esse lugar (nome + país) ─────
-function userHasPlace(userId, name, country) {
+// Mesma nome + país + categoria = duplicata real
+// Mesma nome + país mas CATEGORIA DIFERENTE = lugar diferente (ex: cidade vs hard rock)
+function userHasPlace(userId, name, country, category) {
   return places.some(p =>
     p.userId === userId &&
     norm(p.name||'') === norm(name||'') &&
-    norm(p.country||'') === norm(country||'')
+    norm(p.country||'') === norm(country||'') &&
+    (!category || (p.category||'outro') === (category||'outro'))
   );
 }
 
@@ -1121,7 +1293,7 @@ function copyPlaceToMe(id) {
   if (!place) return;
 
   // Guarda: verificar se já tenho esse lugar
-  if (userHasPlace(me.uid, place.name, place.country)) {
+  if (userHasPlace(me.uid, place.name, place.country, place.category)) {
     toast('⚠️ Você já tem "' + place.name + '" cadastrado!');
     return;
   }
@@ -1888,16 +2060,7 @@ function renderStats() {
         </div>`;
       }).join('')}
     ${crossHTML}
-    <hr class="sdivider">
-    <div>
-      <div class="sblock-title" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.textContent=this.textContent.includes('▼')?'Países cadastrados ▲':'Países cadastrados ▼'">Países cadastrados ▼</div>
-      <div style="display:none;flex-wrap:wrap;gap:4px;margin-top:.5rem">
-        ${[...new Map(vis.map(p=>[placeCountryKey(p), p.country||'?'])).entries()]
-          .sort((a,b)=>a[1].localeCompare(b[1]))
-          .map(([k,name])=>`<span title="key: ${k}" style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);color:var(--muted2)">${name}</span>`)
-          .join('')}
-      </div>
-    </div>`;
+`;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1929,6 +2092,7 @@ function processSnap(docs) {
   renderMap();
   refreshLabels();
   updateOtherBtn();
+  refreshListIfOpen();
   hideLoading();
   const rb = document.getElementById('reload-btn');
   if (rb) rb.style.display = 'none';
@@ -2150,8 +2314,8 @@ async function savePlace() {
       toast('✓ ' + base.name + ' atualizado!');
     } else {
       // Guarda: verificar duplicata para mim mesmo
-      if (userHasPlace(me.uid, base.name, base.country)) {
-        toast('⚠️ Você já tem "' + base.name + '" cadastrado!');
+      if (userHasPlace(me.uid, base.name, base.country, base.category)) {
+        toast('⚠️ Você já tem "' + base.name + '" nessa categoria!');
         btn.disabled = false;
         btn.textContent = 'Salvar lugar';
         return;
@@ -2162,7 +2326,7 @@ async function savePlace() {
       if (forBoth) {
         const other = getOtherUser();
         if (other) {
-          if (userHasPlace(other.uid, base.name, base.country)) {
+          if (userHasPlace(other.uid, base.name, base.country, base.category)) {
             toast('✓ ' + base.name + ' adicionado para você. ⚠️ ' + other.name + ' já tem esse lugar!');
           } else {
             await db.collection('places').add({
@@ -2430,7 +2594,275 @@ function updateOtherBtn() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PAINEL LUGARES DO OUTRO USUÁRIO
+// BUSCA DO MAPA
+// ═══════════════════════════════════════════════════════════════
+let msTimer = null;
+let msGeoResults = [];
+let msSelected = -1;
+
+const CAT_COLS_MS = {cidade:'#e8e8e8',ponto:'#fbbf24',hardrock:'#ef4444',praia:'#22d3ee',natureza:'#4ade80',restaurante:'#fb923c',outro:'#a78bfa'};
+
+function onMapSearchInput() {
+  const q = document.getElementById('ms-input').value.trim();
+  document.getElementById('ms-clear').style.display = q ? 'block' : 'none';
+  msSelected = -1;
+
+  if (!q) { closeMapSearch(); return; }
+  document.getElementById('ms-results').style.display = 'block';
+  document.getElementById('ms-results').innerHTML = '<div class="ms-loading">Buscando…</div>';
+
+  clearTimeout(msTimer);
+  msTimer = setTimeout(() => runMapSearch(q), 300);
+}
+
+async function runMapSearch(q) {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  // 1. Busca nos meus lugares (parcial, qualquer campo)
+  const myResults = places.filter(p => {
+    const text = [p.name, p.city, p.country, p.continent, p.notes]
+      .filter(Boolean).join(' ').toLowerCase();
+    return terms.every(t => text.includes(t));
+  }).slice(0, 8);
+
+  // 2. Busca no mundo via Nominatim
+  msGeoResults = [];
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=pt,en`,
+      { headers: {'User-Agent':'mapa-viagens-andrea-sergio/1.0'} }
+    );
+    msGeoResults = await r.json();
+  } catch(e) { msGeoResults = []; }
+
+  renderMapSearchResults(myResults, msGeoResults, q);
+}
+
+function renderMapSearchResults(myResults, geoResults, q) {
+  const box = document.getElementById('ms-results');
+  if (!myResults.length && !geoResults.length) {
+    box.innerHTML = '<div class="ms-loading">Nenhum resultado</div>';
+    return;
+  }
+
+  let html = '';
+
+  if (myResults.length) {
+    html += '<div class="ms-section">Meus lugares</div>';
+    html += myResults.map((p,i) => {
+      const col = CAT_COLS_MS[p.category||'outro']||'#888';
+      const sub = [p.city&&p.city!==p.name?p.city:null, p.country].filter(Boolean).join(' · ');
+      const uCol = p.userId===uids[0] ? 'var(--u1)' : 'var(--u2)';
+      return `<div class="ms-item" data-idx="${i}" data-type="mine" onclick="goToMyPlace('${p.id}')">
+        <div class="ms-dot" style="background:${uCol}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="ms-name">${highlightMatch(p.name||'', q)}</div>
+          ${sub?`<div class="ms-sub">${sub}</div>`:''}
+        </div>
+        <div class="ms-dot" style="background:${col}"></div>
+      </div>`;
+    }).join('');
+  }
+
+  if (geoResults.length) {
+    html += '<div class="ms-section">Lugares no mundo</div>';
+    html += geoResults.map((r,i) => {
+      const name = r.display_name.split(',')[0].trim();
+      const sub  = r.display_name.split(',').slice(1,3).map(s=>s.trim()).filter(Boolean).join(', ');
+      return `<div class="ms-item" data-idx="${i}" data-type="geo" onclick="goToGeoResult(${i})">
+        <div class="ms-dot" style="background:var(--muted2)"></div>
+        <div style="flex:1;min-width:0">
+          <div class="ms-name">${highlightMatch(name, q)}</div>
+          ${sub?`<div class="ms-sub">${sub}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  box.innerHTML = html;
+  box.style.display = 'block';
+}
+
+function highlightMatch(text, q) {
+  if (!q) return text;
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  let result = text;
+  terms.forEach(t => {
+    const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+    result = result.replace(re, '<mark style="background:var(--amber)33;color:var(--amber);border-radius:2px">$1</mark>');
+  });
+  return result;
+}
+
+function goToMyPlace(id) {
+  const place = places.find(p=>p.id===id);
+  if (!place) return;
+  closeMapSearch();
+  map.setView([place.lat, place.lng], Math.max(map.getZoom(), 12), {animate:true});
+  // Abre o popup do marcador
+  setTimeout(() => {
+    const m = markers[id];
+    if (m) m.openPopup();
+    else {
+      // Se em cluster, tenta abrir
+      const popup = L.popup({maxWidth:220})
+        .setLatLng([place.lat, place.lng])
+        .setContent(makePopup(place))
+        .openOn(map);
+    }
+  }, 400);
+}
+
+function goToGeoResult(idx) {
+  const r = msGeoResults[idx];
+  if (!r) return;
+  closeMapSearch();
+  const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+  const zoom = r.type==='city'||r.type==='administrative' ? 10 : 13;
+  map.setView([lat, lng], zoom, {animate:true});
+  // Marcador temporário
+  const tmp = L.marker([lat, lng]).addTo(map);
+  tmp.bindPopup(`<div style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 2px">
+    <strong>${r.display_name.split(',')[0]}</strong><br>
+    <span style="color:#888;font-size:9px">${r.display_name.split(',').slice(1,3).join(',')}</span>
+  </div>`).openPopup();
+  setTimeout(() => map.removeLayer(tmp), 8000);
+}
+
+function onMapSearchKey(e) {
+  if (e.key === 'Escape') { clearMapSearch(); return; }
+}
+
+function clearMapSearch() {
+  document.getElementById('ms-input').value = '';
+  document.getElementById('ms-clear').style.display = 'none';
+  closeMapSearch();
+}
+
+function closeMapSearch() {
+  document.getElementById('ms-results').style.display = 'none';
+  document.getElementById('ms-results').innerHTML = '';
+}
+
+// Fecha ao clicar fora
+document.addEventListener('click', e => {
+  if (!document.getElementById('map-search').contains(e.target)) closeMapSearch();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// VISÃO LISTA
+// ═══════════════════════════════════════════════════════════════
+let lmUser = 'all', lmCat = '', lmSort = 'name', lmDir = 1;
+
+const CAT_NAMES_LM = {cidade:'Cidade',ponto:'Ponto Turístico',hardrock:'Hard Rock Café',praia:'Praia',natureza:'Natureza',restaurante:'Restaurante',outro:'Outro'};
+const CAT_COLS_LM  = {cidade:'#e8e8e8',ponto:'#fbbf24',hardrock:'#ef4444',praia:'#22d3ee',natureza:'#4ade80',restaurante:'#fb923c',outro:'#a78bfa'};
+
+function openListModal() {
+  document.getElementById('list-modal').classList.add('open');
+  // Atualiza labels dos filtros de usuário
+  if (uids.length >= 2) {
+    const n1 = (places.find(p=>p.userId===uids[0])?.userName||'').split(' ')[0];
+    const n2 = (places.find(p=>p.userId===uids[1])?.userName||'').split(' ')[0];
+    const b1 = document.getElementById('lmf-u1');
+    const b2 = document.getElementById('lmf-u2');
+    if (b1) { b1.textContent = n1; b1.style.display = 'inline-block'; }
+    if (b2) { b2.textContent = n2; b2.style.display = 'inline-block'; }
+  }
+  renderListModal();
+}
+
+function closeListModal() {
+  document.getElementById('list-modal').classList.remove('open');
+  document.getElementById('lm-search').value = '';
+}
+
+function setLmUser(u) {
+  lmUser = u;
+  ['all','u1','u2'].forEach(k => {
+    const el = document.getElementById('lmf-'+k);
+    if (el) el.classList.toggle('on', k===u);
+  });
+  renderListModal();
+}
+
+function setLmCat(cat) {
+  lmCat = cat;
+  document.querySelectorAll('#lm-filters .lm-fbtn').forEach(b => b.classList.remove('on'));
+  if (!cat) document.getElementById('lmf-cat-all').classList.add('on');
+  renderListModal();
+}
+
+function setLmSort(col) {
+  if (lmSort === col) lmDir = -lmDir;
+  else { lmSort = col; lmDir = 1; }
+  document.querySelectorAll('.lm-table th').forEach(th => th.classList.remove('sorted'));
+  const th = document.getElementById('lmth-'+col);
+  if (th) { th.classList.add('sorted'); th.textContent = th.textContent.replace(/ [▲▼]$/,'') + (lmDir===1?' ▲':' ▼'); }
+  renderListModal();
+}
+
+function renderListModal() {
+  let vis = lmUser==='all' ? places
+           : lmUser==='u1' ? places.filter(p=>p.userId===uids[0])
+           : places.filter(p=>p.userId===uids[1]);
+
+  const q = (document.getElementById('lm-search')?.value||'').toLowerCase();
+  if (q) vis = vis.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.city||'').toLowerCase().includes(q));
+  if (lmCat) vis = vis.filter(p=>(p.category||'outro')===lmCat);
+
+  // Sort
+  vis = [...vis].sort((a,b)=>{
+    let av, bv;
+    if (lmSort==='name')   { av=a.name||''; bv=b.name||''; }
+    else if (lmSort==='city')    { av=a.city||a.name||''; bv=b.city||b.name||''; }
+    else if (lmSort==='country') { av=a.country||''; bv=b.country||''; }
+    else if (lmSort==='cat')     { av=a.category||''; bv=b.category||''; }
+    else if (lmSort==='years')   { av=(a.years?.[0]||a.year||0); bv=(b.years?.[0]||b.year||0); return (bv-av)*lmDir; }
+    else if (lmSort==='rating')  { av=a.rating||0; bv=b.rating||0; return (bv-av)*lmDir; }
+    else { av=''; bv=''; }
+    return av.localeCompare(bv)*lmDir;
+  });
+
+  document.getElementById('lm-count').textContent = vis.length + ' lugares';
+  const tbody = document.getElementById('lm-tbody');
+  const empty = document.getElementById('lm-empty');
+
+  if (!vis.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = vis.map(p=>{
+    const col  = CAT_COLS_LM[p.category||'outro']||'#888';
+    const cat  = CAT_NAMES_LM[p.category||'outro']||p.category||'—';
+    const yrs  = p.years?.length ? p.years.join(', ') : (p.year||'—');
+    const stars= p.rating ? '★'.repeat(p.rating)+'☆'.repeat(5-p.rating) : '—';
+    const uCol = p.userId===uids[0] ? 'var(--u1)' : 'var(--u2)';
+    return `<tr>
+      <td><span class="lm-dot" style="background:${uCol}"></span><strong>${p.name||'—'}</strong></td>
+      <td style="color:var(--muted2)">${p.city&&p.city!==p.name?p.city:'—'}</td>
+      <td style="color:var(--muted2)">${p.country||'—'}</td>
+      <td><span class="lm-dot" style="background:${col}"></span>${cat}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)">${yrs}</td>
+      <td class="lm-stars">${stars}</td>
+      <td><div class="lm-actions">
+        ${me && (p.userId===me.uid) ? `<button class="lm-btn edit" onclick="closeListModal();editPlace('${p.id}')">Editar</button>` : ''}
+        ${me && (p.userId===me.uid) ? `<button class="lm-btn del"  onclick="delFromList('${p.id}')">Remover</button>` : ''}
+        ${me && p.userId!==me.uid  ? `<button class="lm-btn edit" onclick="closeListModal();copyPlaceToMe('${p.id}')">＋ Para mim</button>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function delFromList(id) {
+  if (!confirm('Remover este lugar?')) return;
+  db.collection('places').doc(id).delete()
+    .then(()=>{ toast('Lugar removido'); renderListModal(); })
+    .catch(e=>toast('Erro: '+e.message));
+}
+
+// Atualiza lista se estiver aberta quando os dados mudam
+function refreshListIfOpen() {
+  if (document.getElementById('list-modal').classList.contains('open')) renderListModal();
+}
 // ═══════════════════════════════════════════════════════════════
 let opFilter = 'all';
 
@@ -2512,7 +2944,7 @@ async function quickAddFromOther(id, btn) {
   if (!me) return;
   const place = places.find(p => p.id === id);
   if (!place) return;
-  if (userHasPlace(me.uid, place.name, place.country)) {
+  if (userHasPlace(me.uid, place.name, place.country, place.category)) {
     toast('⚠️ Você já tem "' + place.name + '"!');
     return;
   }
