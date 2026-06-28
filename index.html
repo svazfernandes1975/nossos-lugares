@@ -452,7 +452,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .ms-loading{padding:.75rem .85rem;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);text-align:center}
 
 @media(max-width:640px){
-  #map-search{top:calc(var(--tbh,5rem) + .4rem);width:calc(100vw - 1.5rem)}
+  #map-search{
+    top:calc(6.2rem + .4rem);
+    width:calc(100vw - 1.5rem);
+    left:50%;transform:translateX(-50%);
+  }
 }
 
 /* ── VISÃO LISTA ── */
@@ -758,7 +762,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v78</div>
+<div id="ver">v80</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2703,12 +2707,12 @@ function renderMapSearchResults(myResults, geoResults, q) {
 }
 
 function highlightMatch(text, q) {
-  if (!q) return text;
+  if (!q || !text) return text;
   const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
   let result = text;
   terms.forEach(t => {
     const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
-    result = result.replace(re, '<mark style="background:var(--amber)33;color:var(--amber);border-radius:2px">$1</mark>');
+    result = result.replace(re, '<mark style="background:rgba(232,169,60,.25);color:#e8a93c;border-radius:2px;padding:0 1px">$1</mark>');
   });
   return result;
 }
