@@ -512,6 +512,25 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 .lm-btn.del{color:#ef4444;border-color:#3a1f1f}
 .lm-empty{padding:3rem;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
 .lm-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);white-space:nowrap}
+.lm-edit-row td{background:var(--bg3)!important;padding:0!important;border-bottom:2px solid var(--amber)!important}
+.lm-edit-form{padding:.75rem 1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem .75rem}
+.lm-edit-form input,.lm-edit-form select{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.8rem;padding:.35rem .6rem;width:100%;box-sizing:border-box}
+.lm-edit-form textarea{grid-column:1/-1;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.8rem;padding:.35rem .6rem;height:50px;resize:none;width:100%;box-sizing:border-box;font-family:inherit}
+.lm-edit-form label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted2);display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
+.lm-edit-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;padding-top:.25rem}
+.lm-save-btn{font-family:'DM Mono',monospace;font-size:9px;padding:5px 16px;border-radius:6px;border:none;background:var(--amber);color:#000;cursor:pointer;font-weight:700}
+.lm-cancel-btn{font-family:'DM Mono',monospace;font-size:9px;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer}
+.lm-edit-row td{background:var(--bg3)!important;padding:0!important}
+.lm-edit-form{padding:.75rem 1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+.lm-edit-form input,.lm-edit-form select,.lm-edit-form textarea{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:6px;
+  color:var(--text);font-size:.8rem;padding:.35rem .6rem;width:100%;box-sizing:border-box;
+}
+.lm-edit-form textarea{grid-column:1/-1;height:54px;resize:none;font-family:inherit}
+.lm-edit-form label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted2);display:block;margin-bottom:2px}
+.lm-edit-actions{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end}
+.lm-save-btn{font-family:'DM Mono',monospace;font-size:9px;padding:5px 14px;border-radius:6px;border:1px solid var(--amber);background:var(--amber);color:#000;cursor:pointer;font-weight:700}
+.lm-cancel-btn{font-family:'DM Mono',monospace;font-size:9px;padding:5px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer}
 
 /* ── PAINEL LUGARES DO OUTRO ── */
 #other-panel{
@@ -643,14 +662,14 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
     <button class="lm-fbtn"    id="lmf-u1"  onclick="setLmUser('u1')" style="display:none">—</button>
     <button class="lm-fbtn"    id="lmf-u2"  onclick="setLmUser('u2')" style="display:none">—</button>
     <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);align-self:center;margin-left:.5rem">Tipo:</span>
-    <button class="lm-fbtn on" id="lmf-cat-all"  onclick="setLmCat('')">Todos</button>
-    <button class="lm-fbtn" onclick="setLmCat('cidade')">🏙 Cidade</button>
-    <button class="lm-fbtn" onclick="setLmCat('ponto')">🏛 Ponto</button>
-    <button class="lm-fbtn" onclick="setLmCat('hardrock')">🎸 Hard Rock</button>
-    <button class="lm-fbtn" onclick="setLmCat('praia')">🏖 Praia</button>
-    <button class="lm-fbtn" onclick="setLmCat('natureza')">🏔 Natureza</button>
-    <button class="lm-fbtn" onclick="setLmCat('restaurante')">🍽 Restaurante</button>
-    <button class="lm-fbtn" onclick="setLmCat('outro')">📌 Outro</button>
+    <button class="lm-fbtn on" id="lmf-cat-all"  onclick="setLmCat('',this)">Todos</button>
+    <button class="lm-fbtn" onclick="setLmCat('cidade',this)">🏙 Cidade</button>
+    <button class="lm-fbtn" onclick="setLmCat('ponto',this)">🏛 Ponto</button>
+    <button class="lm-fbtn" onclick="setLmCat('hardrock',this)">🎸 Hard Rock</button>
+    <button class="lm-fbtn" onclick="setLmCat('praia',this)">🏖 Praia</button>
+    <button class="lm-fbtn" onclick="setLmCat('natureza',this)">🏔 Natureza</button>
+    <button class="lm-fbtn" onclick="setLmCat('restaurante',this)">🍽 Restaurante</button>
+    <button class="lm-fbtn" onclick="setLmCat('outro',this)">📌 Outro</button>
   </div>
   <div class="lm-body">
     <table class="lm-table">
@@ -739,7 +758,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v75</div>
+<div id="ver">v78</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2785,10 +2804,11 @@ function setLmUser(u) {
   renderListModal();
 }
 
-function setLmCat(cat) {
+function setLmCat(cat, btn) {
   lmCat = cat;
   document.querySelectorAll('#lm-filters .lm-fbtn').forEach(b => b.classList.remove('on'));
   if (!cat) document.getElementById('lmf-cat-all').classList.add('on');
+  else if (btn) btn.classList.add('on');
   renderListModal();
 }
 
@@ -2801,34 +2821,36 @@ function setLmSort(col) {
   renderListModal();
 }
 
+let lmExpanded = null; // id do lugar com edição inline aberta
+
 function renderListModal() {
   let vis = lmUser==='all' ? places
            : lmUser==='u1' ? places.filter(p=>p.userId===uids[0])
            : places.filter(p=>p.userId===uids[1]);
 
   const q = (document.getElementById('lm-search')?.value||'').toLowerCase();
-  if (q) vis = vis.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.city||'').toLowerCase().includes(q));
+  if (q) vis = vis.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.city||'').toLowerCase().includes(q)||(p.country||'').toLowerCase().includes(q));
   if (lmCat) vis = vis.filter(p=>(p.category||'outro')===lmCat);
 
-  // Sort
   vis = [...vis].sort((a,b)=>{
-    let av, bv;
-    if (lmSort==='name')   { av=a.name||''; bv=b.name||''; }
-    else if (lmSort==='city')    { av=a.city||a.name||''; bv=b.city||b.name||''; }
-    else if (lmSort==='country') { av=a.country||''; bv=b.country||''; }
-    else if (lmSort==='cat')     { av=a.category||''; bv=b.category||''; }
-    else if (lmSort==='years')   { av=(a.years?.[0]||a.year||0); bv=(b.years?.[0]||b.year||0); return (bv-av)*lmDir; }
-    else if (lmSort==='rating')  { av=a.rating||0; bv=b.rating||0; return (bv-av)*lmDir; }
-    else { av=''; bv=''; }
+    let av,bv;
+    if(lmSort==='name')   {av=a.name||'';bv=b.name||'';}
+    else if(lmSort==='city')   {av=a.city||'';bv=b.city||'';}
+    else if(lmSort==='country'){av=a.country||'';bv=b.country||'';}
+    else if(lmSort==='cat')    {av=a.category||'';bv=b.category||'';}
+    else if(lmSort==='years')  {av=(a.years?.[0]||a.year||0);bv=(b.years?.[0]||b.year||0);return(bv-av)*lmDir;}
+    else if(lmSort==='rating') {av=a.rating||0;bv=b.rating||0;return(bv-av)*lmDir;}
+    else{av='';bv='';}
     return av.localeCompare(bv)*lmDir;
   });
 
   document.getElementById('lm-count').textContent = vis.length + ' lugares';
   const tbody = document.getElementById('lm-tbody');
   const empty = document.getElementById('lm-empty');
-
   if (!vis.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none';
+  empty.style.display='none';
+
+  const CAT_OPTS = Object.entries(CAT_NAMES_LM).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
 
   tbody.innerHTML = vis.map(p=>{
     const col  = CAT_COLS_LM[p.category||'outro']||'#888';
@@ -2836,20 +2858,61 @@ function renderListModal() {
     const yrs  = p.years?.length ? p.years.join(', ') : (p.year||'—');
     const stars= p.rating ? '★'.repeat(p.rating)+'☆'.repeat(5-p.rating) : '—';
     const uCol = p.userId===uids[0] ? 'var(--u1)' : 'var(--u2)';
-    return `<tr>
+    const isMine = me && p.userId===me.uid;
+    const isOpen = lmExpanded===p.id;
+    const city = p.city || '—';
+
+    const editRow = isMine && isOpen ? `
+    <tr class="lm-edit-row"><td colspan="7">
+      <div class="lm-edit-form">
+        <div><label>Nome</label><input id="lei-name" value="${(p.name||'').replace(/"/g,'&quot;')}"></div>
+        <div><label>Cidade</label><input id="lei-city" value="${(p.city||'').replace(/"/g,'&quot;')}"></div>
+        <div><label>País</label><input id="lei-country" value="${(p.country||'').replace(/"/g,'&quot;')}"></div>
+        <div><label>Categoria</label><select id="lei-cat">${CAT_OPTS.replace(`value="${p.category||'outro'}"`,`value="${p.category||'outro'}" selected`)}</select></div>
+        <div><label>Anos (vírgula)</label><input id="lei-years" value="${p.years?.join(', ')||p.year||''}"></div>
+        <div><label>Avaliação (0-5)</label><input id="lei-rating" type="number" min="0" max="5" value="${p.rating||0}"></div>
+        <textarea id="lei-notes" placeholder="Observações…">${p.notes||''}</textarea>
+        <div class="lm-edit-actions">
+          <button class="lm-cancel-btn" onclick="lmExpanded=null;renderListModal()">Cancelar</button>
+          <button class="lm-save-btn" onclick="saveLmInline('${p.id}')">Salvar</button>
+        </div>
+      </div>
+    </td></tr>` : '';
+
+    return `<tr style="${isOpen?'background:var(--bg3)':''}">
       <td><span class="lm-dot" style="background:${uCol}"></span><strong>${p.name||'—'}</strong></td>
-      <td style="color:var(--muted2)">${p.city&&p.city!==p.name?p.city:'—'}</td>
+      <td style="color:var(--muted2)">${city}</td>
       <td style="color:var(--muted2)">${p.country||'—'}</td>
       <td><span class="lm-dot" style="background:${col}"></span>${cat}</td>
       <td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)">${yrs}</td>
       <td class="lm-stars">${stars}</td>
       <td><div class="lm-actions">
-        ${me && (p.userId===me.uid) ? `<button class="lm-btn edit" onclick="closeListModal();editPlace('${p.id}')">Editar</button>` : ''}
-        ${me && (p.userId===me.uid) ? `<button class="lm-btn del"  onclick="delFromList('${p.id}')">Remover</button>` : ''}
-        ${me && p.userId!==me.uid  ? `<button class="lm-btn edit" onclick="closeListModal();copyPlaceToMe('${p.id}')">＋ Para mim</button>` : ''}
+        ${isMine ? `<button class="lm-btn edit" onclick="lmExpanded=lmExpanded==='${p.id}'?null:'${p.id}';renderListModal()">${isOpen?'Fechar':'Editar'}</button>` : ''}
+        ${isMine ? `<button class="lm-btn del" onclick="delFromList('${p.id}')">Remover</button>` : ''}
+        ${!isMine && me ? `<button class="lm-btn edit" onclick="closeListModal();copyPlaceToMe('${p.id}')">＋ Para mim</button>` : ''}
       </div></td>
-    </tr>`;
+    </tr>${editRow}`;
   }).join('');
+}
+
+async function saveLmInline(id) {
+  if (!me) return;
+  const name    = document.getElementById('lei-name')?.value.trim();
+  const city    = document.getElementById('lei-city')?.value.trim();
+  const country = document.getElementById('lei-country')?.value.trim();
+  const cat     = document.getElementById('lei-cat')?.value;
+  const yrsRaw  = document.getElementById('lei-years')?.value;
+  const rating  = parseInt(document.getElementById('lei-rating')?.value)||0;
+  const notes   = document.getElementById('lei-notes')?.value.trim();
+  const years   = yrsRaw.split(',').map(y=>parseInt(y.trim())).filter(y=>!isNaN(y)&&y>1900);
+  const cont    = guessContinent(country, null) || '';
+  const ck      = NAME_TO_CODE[norm(country)] || nameToCode[norm(country)] || '';
+
+  try {
+    await db.collection('places').doc(id).update({name,city,country,countryCode:ck,continent:cont,category:cat,years,rating,notes});
+    lmExpanded = null;
+    toast('✓ ' + name + ' atualizado!');
+  } catch(e) { toast('Erro: ' + e.message); }
 }
 
 function delFromList(id) {
@@ -2893,10 +2956,15 @@ function renderOtherPanel() {
   const body   = document.getElementById('op-body');
   const CAT_COLORS_LOCAL = {cidade:'#e8e8e8',ponto:'#fbbf24',hardrock:'#ef4444',praia:'#22d3ee',natureza:'#4ade80',restaurante:'#fb923c',outro:'#a78bfa'};
 
-  // Lugares do outro, ordenados por nome
-  const otherPlaces = places
+  // Lugares do outro, deduplica por nome + país + categoria, ordena por nome
+  const seen = new Map();
+  places
     .filter(p => p.userId === other.uid)
-    .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    .forEach(p => {
+      const k = norm((p.name||'') + '|' + (p.country||'') + '|' + (p.category||'outro'));
+      if (!seen.has(k)) seen.set(k, p);
+    });
+  const otherPlaces = [...seen.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
   // Verifica quais já tenho
   const filtered = otherPlaces.filter(p => {
