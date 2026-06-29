@@ -931,7 +931,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v87</div>
+<div id="ver">v88</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -3255,13 +3255,20 @@ function renderHrList() {
     (h.country||'').toLowerCase().includes(q)
   );
 
-  // Verificar quais já tenho — só por nome normalizado + categoria hardrock
+  // Verificar quais já tenho — combina cidade (principal) ou nome específico
   const withStatus = vis.map(h => {
-    const iMine = me ? places.some(p =>
-      p.userId === me.uid &&
-      p.category === 'hardrock' &&
-      norm(p.name) === norm(h.name)
-    ) : false;
+    const iMine = me ? places.some(p => {
+      if (p.userId !== me.uid || p.category !== 'hardrock') return false;
+      const pCity = norm(p.city || '');
+      const hCity = norm(h.city || '');
+      // 1. Cidade bate (critério principal — todos têm mesmo nome "Hard Rock Cafe")
+      if (pCity && hCity && pCity === hCity) return true;
+      // 2. Nome específico bate (ex: "Hard Rock Cafe Lisboa" ≠ "Hard Rock Cafe")
+      const pn = norm(p.name), hn = norm(h.name);
+      const generic = ['hard rock cafe','hard rock hotel','hard rock casino'];
+      if (pn === hn && !generic.includes(pn)) return true;
+      return false;
+    }) : false;
     return {...h, iMine};
   });
 
