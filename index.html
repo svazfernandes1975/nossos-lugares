@@ -931,7 +931,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v86</div>
+<div id="ver">v87</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -961,8 +961,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   <div class="autharea">
     <button id="about-btn" onclick="toggleAbout()" title="Sobre" style="border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">sobre</button>
     <button id="other-btn" onclick="openOtherPanel()" title="Lugares do outro usuário" style="display:none;border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--u2)';this.style.color='var(--u2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">ver dela</button>
-    <button onclick="openHrPanel()" title="Hard Rocks pelo mundo" style="border:1px solid #3a1f1f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#ef4444;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ef4444'">🎸 HR</button>
-    <button onclick="openPoiPanel()" title="Pontos turísticos por cidade" style="border:1px solid #1e3a5f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#3b82f6;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#3b82f6';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#3b82f6'">🏛 POI</button>
+    <button id="hr-btn" onclick="openHrPanel()" title="Hard Rocks pelo mundo" style="display:none;border:1px solid #3a1f1f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#ef4444;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ef4444'">🎸 HR</button>
+    <button id="poi-btn" onclick="openPoiPanel()" title="Pontos turísticos por cidade" style="display:none;border:1px solid #1e3a5f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#3b82f6;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#3b82f6';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#3b82f6'">🏛 POI</button>
     <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores"><span id="theme-dot"></span></button>
     <img id="uavatar">
     <button id="authbtn" onclick="doAuth()">Entrar</button>
@@ -2772,32 +2772,37 @@ async function reverseGeocode(lat, lng, forceName) {
 }
 
 function updateOtherBtn() {
-  const btn = document.getElementById('other-btn');
-  if (!btn || !me) { if (btn) btn.style.display = 'none'; return; }
+  const btn    = document.getElementById('other-btn');
+  const hrBtn  = document.getElementById('hr-btn');
+  const poiBtn = document.getElementById('poi-btn');
 
-  // Descobre o nome do outro usuário pelos dados ou pelo email conhecido
-  const other = getOtherUser();
-  let otherName = null;
+  // HR e POI: visíveis só quando logado
+  if (hrBtn)  hrBtn.style.display  = me ? 'inline-block' : 'none';
+  if (poiBtn) poiBtn.style.display = me ? 'inline-block' : 'none';
 
-  if (other) {
-    otherName = other.name.split(' ')[0];
-  } else {
-    // Fallback: deduz pelo email (lista conhecida)
+  // "ver de X": logado + outro usuário identificável
+  if (!btn) return;
+  if (me && uids.length >= 2) {
+    const other = getOtherUser();
+    if (other) {
+      btn.textContent = 'ver de ' + other.name.split(' ')[0];
+      btn.style.display = 'inline-block';
+      return;
+    }
+  }
+  if (me) {
+    // Logado mas outro usuário ainda sem lugares — tenta pelo email
     const myIdx = EMAIL_ORDER.indexOf(me.email);
     if (myIdx !== -1) {
       const otherEmail = EMAIL_ORDER[myIdx === 0 ? 1 : 0];
-      // Tenta achar o nome em algum lugar
       const ref = places.find(p => p.userEmail === otherEmail);
-      otherName = ref ? ref.userName.split(' ')[0] : otherEmail.split('@')[0];
+      const otherName = ref ? ref.userName.split(' ')[0] : otherEmail.split('@')[0];
+      btn.textContent = 'ver de ' + otherName;
+      btn.style.display = 'inline-block';
+      return;
     }
   }
-
-  if (otherName) {
-    btn.textContent = 'ver de ' + otherName;
-    btn.style.display = 'inline-block';
-  } else {
-    btn.style.display = 'none';
-  }
+  btn.style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════
