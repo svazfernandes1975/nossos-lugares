@@ -403,6 +403,120 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   #exp-btn{display:none!important}
 }
 
+/* ── PONTOS TURÍSTICOS ── */
+#poi-panel{
+  position:fixed;top:0;left:-460px;width:440px;height:100vh;z-index:300;
+  background:var(--bg2);border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  transition:left .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:8px 0 32px rgba(0,0,0,.5);
+}
+#poi-panel.open{left:0}
+.poi-head{
+  padding:.9rem 1.25rem;border-bottom:1px solid var(--border2);
+  background:var(--bg3);flex-shrink:0;
+}
+.poi-title{font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:.5rem;justify-content:space-between}
+.poi-search-row{display:flex;gap:6px;margin-top:.65rem}
+.poi-city-input{
+  flex:1;padding:.4rem .75rem;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-size:.85rem;
+}
+.poi-city-input:focus{outline:none;border-color:var(--amber)}
+.poi-go{
+  padding:.4rem .9rem;border-radius:8px;border:none;
+  background:var(--amber);color:#000;font-family:'DM Mono',monospace;
+  font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.poi-go:disabled{opacity:.5;cursor:default}
+.poi-type-row{
+  padding:.45rem .9rem;border-bottom:1px solid var(--border);
+  display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;overflow-x:auto;
+}
+.poi-tbtn{font-family:'DM Mono',monospace;font-size:8px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;white-space:nowrap;transition:all .12s}
+.poi-tbtn.on{background:var(--blue,#3b82f6);color:#fff;border-color:var(--blue,#3b82f6)}
+.poi-status-row{
+  padding:.35rem .9rem;border-bottom:1px solid var(--border);
+  display:flex;gap:5px;flex-shrink:0;align-items:center;
+}
+.poi-fbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s}
+.poi-fbtn.on{background:var(--amber);color:#000;border-color:var(--amber)}
+.poi-body{flex:1;overflow-y:auto;padding:.25rem 0}
+.poi-body::-webkit-scrollbar{width:3px}
+.poi-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.poi-item{
+  display:flex;align-items:center;gap:10px;
+  padding:.55rem 1.1rem;border-bottom:1px solid var(--border);
+  transition:background .12s;cursor:default;
+}
+.poi-item:hover{background:var(--bg3)}
+.poi-item.mine{opacity:.45}
+.poi-icon{font-size:1.15rem;flex-shrink:0;width:22px;text-align:center}
+.poi-info{flex:1;min-width:0}
+.poi-name{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.poi-meta{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted2);margin-top:1px}
+.poi-add{font-family:'DM Mono',monospace;font-size:9px;padding:3px 9px;border-radius:10px;border:1px solid var(--green);color:var(--green);background:transparent;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.poi-add:hover{background:var(--green);color:#000}
+.poi-add:disabled{border-color:var(--border2);color:var(--muted);cursor:default}
+.poi-add:disabled:hover{background:transparent;color:var(--muted)}
+.poi-msg{padding:2rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)}
+.poi-summary{padding:.35rem 1.1rem;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);border-bottom:1px solid var(--border);flex-shrink:0}
+
+@media(max-width:640px){#poi-panel{width:100vw;left:-100vw}}
+
+/* ── HARD ROCK HUNTER ── */
+#hr-panel{
+  position:fixed;top:0;right:-440px;width:420px;height:100vh;z-index:300;
+  background:var(--bg2);border-left:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  transition:right .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 32px rgba(0,0,0,.5);
+}
+#hr-panel.open{right:0}
+.hr-head{
+  padding:1rem 1.25rem;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:.75rem;flex-shrink:0;
+  background:linear-gradient(135deg,#1a0a0a,#2a0f0f);
+}
+.hr-title{font-size:.95rem;font-weight:700;flex:1}
+.hr-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px}
+.hr-filters{
+  padding:.5rem 1rem;border-bottom:1px solid var(--border);
+  display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;
+}
+.hr-search{
+  flex:1;padding:.35rem .7rem;min-width:120px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-family:'DM Mono',monospace;font-size:11px;
+}
+.hr-search:focus{outline:none;border-color:#ef4444}
+.hr-fbtn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.hr-fbtn.on{background:#ef4444;color:#fff;border-color:#ef4444}
+.hr-body{flex:1;overflow-y:auto;padding:.25rem 0}
+.hr-body::-webkit-scrollbar{width:3px}
+.hr-body::-webkit-scrollbar-thumb{background:#3a1f1f;border-radius:3px}
+.hr-item{
+  display:flex;align-items:center;gap:10px;
+  padding:.6rem 1.25rem;border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.hr-item:hover{background:var(--bg3)}
+.hr-item.mine{opacity:.5}
+.hr-info{flex:1;min-width:0}
+.hr-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr-loc{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);margin-top:2px}
+.hr-add{font-family:'DM Mono',monospace;font-size:9px;padding:4px 10px;border-radius:12px;border:1px solid #ef4444;color:#ef4444;background:transparent;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.hr-add:hover{background:#ef4444;color:#fff}
+.hr-add:disabled{border-color:var(--border2);color:var(--muted);cursor:default}
+.hr-add:disabled:hover{background:transparent;color:var(--muted)}
+.hr-status{padding:1.5rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)}
+.hr-summary{padding:.4rem 1.25rem;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted2);border-bottom:1px solid var(--border)}
+
+@media(max-width:640px){
+  #hr-panel{width:100vw;right:-100vw}
+}
+
 /* ── BUSCA DO MAPA ── */
 #map-search{
   position:fixed;
@@ -693,6 +807,62 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   </div>
 </div>
 
+<!-- PONTOS TURÍSTICOS -->
+<div id="poi-panel">
+  <div class="poi-head">
+    <div class="poi-title">
+      <span>🏛 Pontos Turísticos</span>
+      <button class="pc" onclick="closePoiPanel()">✕</button>
+    </div>
+    <div class="poi-search-row">
+      <input class="poi-city-input" id="poi-city" placeholder="Digite uma cidade… ex: Roma" onkeydown="if(event.key==='Enter')fetchPoiPlaces()">
+      <button class="poi-go" id="poi-go" onclick="fetchPoiPlaces()">Buscar</button>
+    </div>
+  </div>
+  <div class="poi-type-row" id="poi-type-row" style="display:none">
+    <button class="poi-tbtn on" onclick="setPoiType('',this)">Todos</button>
+    <button class="poi-tbtn" onclick="setPoiType('museum',this)">🏛 Museu</button>
+    <button class="poi-tbtn" onclick="setPoiType('monument',this)">🗿 Monumento</button>
+    <button class="poi-tbtn" onclick="setPoiType('castle',this)">🏰 Castelo</button>
+    <button class="poi-tbtn" onclick="setPoiType('church',this)">⛪ Igreja</button>
+    <button class="poi-tbtn" onclick="setPoiType('viewpoint',this)">👁 Mirante</button>
+    <button class="poi-tbtn" onclick="setPoiType('ruins',this)">🏚 Ruínas</button>
+    <button class="poi-tbtn" onclick="setPoiType('attraction',this)">✨ Atração</button>
+    <button class="poi-tbtn" onclick="setPoiType('park',this)">🌿 Parque</button>
+    <button class="poi-tbtn" onclick="setPoiType('gallery',this)">🖼 Galeria</button>
+    <button class="poi-tbtn" onclick="setPoiType('theatre',this)">🎭 Teatro</button>
+  </div>
+  <div class="poi-status-row" id="poi-status-row" style="display:none">
+    <button class="poi-fbtn on" id="poif-all"  onclick="setPoiFilter('all')">Todos</button>
+    <button class="poi-fbtn"    id="poif-add"  onclick="setPoiFilter('add')">Falta</button>
+    <button class="poi-fbtn"    id="poif-mine" onclick="setPoiFilter('mine')">Tenho</button>
+  </div>
+  <div class="poi-body" id="poi-body">
+    <div class="poi-msg">Digite uma cidade e clique em Buscar</div>
+  </div>
+</div>
+
+<!-- HARD ROCK HUNTER -->
+<div id="hr-panel">
+  <div class="hr-head">
+    <span style="font-size:1.5rem">🎸</span>
+    <div>
+      <div class="hr-title">Hard Rock pelo Mundo</div>
+      <div class="hr-sub" id="hr-sub">Carregando localizações…</div>
+    </div>
+    <button class="pc" onclick="closeHrPanel()">✕</button>
+  </div>
+  <div class="hr-filters">
+    <input class="hr-search" id="hr-search" placeholder="Buscar cidade ou país…" oninput="renderHrList()">
+    <button class="hr-fbtn on" id="hrf-all"  onclick="setHrFilter('all')">Todos</button>
+    <button class="hr-fbtn"    id="hrf-add"  onclick="setHrFilter('add')">Falta</button>
+    <button class="hr-fbtn"    id="hrf-mine" onclick="setHrFilter('mine')">Tenho</button>
+  </div>
+  <div class="hr-body" id="hr-body">
+    <div class="hr-status">🎸 Buscando Hard Rocks no mundo…</div>
+  </div>
+</div>
+
 <!-- PAINEL LUGARES DO OUTRO -->
 <div id="other-panel">
   <div class="op-head">
@@ -761,7 +931,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v82</div>
+<div id="ver">v85</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -791,6 +961,8 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
   <div class="autharea">
     <button id="about-btn" onclick="toggleAbout()" title="Sobre" style="border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">sobre</button>
     <button id="other-btn" onclick="openOtherPanel()" title="Lugares do outro usuário" style="display:none;border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.borderColor='var(--u2)';this.style.color='var(--u2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">ver dela</button>
+    <button onclick="openHrPanel()" title="Hard Rocks pelo mundo" style="border:1px solid #3a1f1f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#ef4444;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ef4444'">🎸 HR</button>
+    <button onclick="openPoiPanel()" title="Pontos turísticos por cidade" style="border:1px solid #1e3a5f;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#3b82f6;transition:all .15s;flex-shrink:0;padding:4px 10px;border-radius:20px" onmouseover="this.style.background='#3b82f6';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#3b82f6'">🏛 POI</button>
     <button id="theme-btn" onclick="toggleThemePop()" title="Tema e cores"><span id="theme-dot"></span></button>
     <img id="uavatar">
     <button id="authbtn" onclick="doAuth()">Entrar</button>
@@ -1286,6 +1458,16 @@ function makeIcon(place) {
 // Mesma nome + país mas CATEGORIA DIFERENTE = lugar diferente (ex: cidade vs hard rock)
 function userHasPlace(userId, name, country, category) {
   return places.some(p =>
+    p.userId === userId &&
+    norm(p.name||'') === norm(name||'') &&
+    norm(p.country||'') === norm(country||'') &&
+    (!category || (p.category||'outro') === (category||'outro'))
+  );
+}
+
+// Retorna o lugar conflitante para mostrar mensagem útil
+function findConflict(userId, name, country, category) {
+  return places.find(p =>
     p.userId === userId &&
     norm(p.name||'') === norm(name||'') &&
     norm(p.country||'') === norm(country||'') &&
@@ -2336,8 +2518,11 @@ async function savePlace() {
       toast('✓ ' + base.name + ' atualizado!');
     } else {
       // Guarda: verificar duplicata para mim mesmo
-      if (userHasPlace(me.uid, base.name, base.country, base.category)) {
-        toast('⚠️ Você já tem "' + base.name + '" nessa categoria!');
+      const conflict = findConflict(me.uid, base.name, base.country, base.category);
+      if (conflict) {
+        const CAT_LABEL = {cidade:'Cidade',ponto:'Ponto',hardrock:'Hard Rock',praia:'Praia',natureza:'Natureza',restaurante:'Restaurante',outro:'Outro'};
+        const yrs = conflict.years?.join(', ') || conflict.year || '—';
+        toast('⚠️ Conflito: já existe "' + conflict.name + '" (' + (CAT_LABEL[conflict.category]||conflict.category) + ', ' + (conflict.country||'?') + ', ' + yrs + ')');
         btn.disabled = false;
         btn.textContent = 'Salvar lugar';
         return;
@@ -2794,7 +2979,336 @@ document.addEventListener('click', e => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// VISÃO LISTA
+// PONTOS TURÍSTICOS
+// ═══════════════════════════════════════════════════════════════
+let poiData   = [];
+let poiFilter = 'all';
+let poiType   = '';
+let poiCity   = '';
+let poiCountry= '';
+
+const POI_TYPE_MAP = {
+  // tourism tags
+  museum:'museum', gallery:'gallery', viewpoint:'viewpoint',
+  attraction:'attraction', theme_park:'attraction', zoo:'attraction',
+  aquarium:'attraction', artwork:'attraction',
+  // historic tags
+  monument:'monument', memorial:'monument', castle:'castle',
+  ruins:'ruins', archaeological_site:'ruins', fort:'castle',
+  // amenity tags
+  place_of_worship:'church', theatre:'theatre', cinema:'theatre',
+  // leisure
+  park:'park', nature_reserve:'park',
+};
+const POI_ICONS = {
+  museum:'🏛', gallery:'🖼', viewpoint:'👁', attraction:'✨',
+  monument:'🗿', castle:'🏰', ruins:'🏚', church:'⛪',
+  theatre:'🎭', park:'🌿', default:'📍'
+};
+const POI_LABELS = {
+  museum:'Museu', gallery:'Galeria', viewpoint:'Mirante', attraction:'Atração',
+  monument:'Monumento', castle:'Castelo', ruins:'Ruínas', church:'Igreja/Templo',
+  theatre:'Teatro/Cinema', park:'Parque/Natureza', default:'Ponto Turístico'
+};
+const POI_TO_CAT = {
+  museum:'ponto', gallery:'ponto', viewpoint:'ponto', attraction:'ponto',
+  monument:'ponto', castle:'ponto', ruins:'ponto', church:'ponto',
+  theatre:'ponto', park:'natureza'
+};
+
+function openPoiPanel() {
+  document.getElementById('poi-panel').classList.add('open');
+  setTimeout(()=>document.getElementById('poi-city').focus(), 350);
+}
+function closePoiPanel() {
+  document.getElementById('poi-panel').classList.remove('open');
+}
+function setPoiType(t, btn) {
+  poiType = t;
+  document.querySelectorAll('.poi-tbtn').forEach(b=>b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  renderPoiList();
+}
+function setPoiFilter(f) {
+  poiFilter = f;
+  ['all','add','mine'].forEach(k=>document.getElementById('poif-'+k).classList.toggle('on',k===f));
+  renderPoiList();
+}
+
+async function fetchPoiPlaces() {
+  const cityRaw = document.getElementById('poi-city').value.trim();
+  if (!cityRaw) { toast('Digite uma cidade primeiro'); return; }
+
+  const btn = document.getElementById('poi-go');
+  btn.disabled = true; btn.textContent = '…';
+  document.getElementById('poi-body').innerHTML = '<div class="poi-msg">🔍 Localizando ' + cityRaw + '…</div>';
+
+  // 1. Geocodifica a cidade
+  try {
+    const geo = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityRaw)}&format=json&limit=1&addressdetails=1`,
+      {headers:{'User-Agent':'mapa-viagens-andrea-sergio/1.0'}}
+    );
+    const geoData = await geo.json();
+    if (!geoData.length) {
+      document.getElementById('poi-body').innerHTML = '<div class="poi-msg">Cidade não encontrada</div>';
+      btn.disabled=false; btn.textContent='Buscar'; return;
+    }
+
+    const place = geoData[0];
+    const bb    = place.boundingbox; // [south, north, west, east]
+    const s=parseFloat(bb[0]),n=parseFloat(bb[1]),w=parseFloat(bb[2]),e=parseFloat(bb[3]);
+    poiCity    = place.address?.city || place.address?.town || place.address?.village || cityRaw;
+    poiCountry = place.address?.country || '';
+
+    document.getElementById('poi-body').innerHTML = `<div class="poi-msg">🔍 Buscando pontos em ${poiCity}…</div>`;
+
+    // 2. Overpass: pontos turísticos na bounding box
+    const query = `[out:json][timeout:20];
+(
+  node["tourism"~"museum|gallery|viewpoint|attraction|theme_park|zoo|aquarium|artwork"]["name"](${s},${w},${n},${e});
+  node["historic"~"monument|memorial|castle|ruins|archaeological_site|fort"]["name"](${s},${w},${n},${e});
+  node["amenity"~"place_of_worship|theatre"]["name"](${s},${w},${n},${e});
+  node["leisure"~"park|nature_reserve"]["name"](${s},${w},${n},${e});
+  way["tourism"~"museum|gallery|attraction|castle"]["name"](${s},${w},${n},${e});
+  way["historic"~"monument|castle|ruins"]["name"](${s},${w},${n},${e});
+);
+out center 100;`;
+
+    const ov  = await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)});
+    const ovd = await ov.json();
+    const els = ovd.elements || [];
+
+    // Processa e deduplica
+    const seen = new Set();
+    poiData = els.map(el => {
+      const tags = el.tags||{};
+      const lat  = el.lat??el.center?.lat;
+      const lng  = el.lon??el.center?.lon;
+      const name = tags['name:pt']||tags.name||'';
+      if (!name||!lat) return null;
+      const k = norm(name);
+      if (seen.has(k)) return null;
+      seen.add(k);
+      const rawType = tags.tourism||tags.historic||tags.amenity||tags.leisure||'attraction';
+      const type    = POI_TYPE_MAP[rawType]||'attraction';
+      return {lat, lng, name, type, rawType};
+    }).filter(Boolean)
+      .sort((a,b)=>a.name.localeCompare(b.name));
+
+    document.getElementById('poi-type-row').style.display   = 'flex';
+    document.getElementById('poi-status-row').style.display = 'flex';
+    document.getElementById('poi-city').value = poiCity;
+    renderPoiList();
+  } catch(err) {
+    document.getElementById('poi-body').innerHTML = '<div class="poi-msg">Erro ao buscar — tente novamente</div>';
+  }
+  btn.disabled=false; btn.textContent='Buscar';
+}
+
+function renderPoiList() {
+  const body = document.getElementById('poi-body');
+  let vis = poiData;
+  if (poiType) vis = vis.filter(p=>p.type===poiType);
+
+  const withStatus = vis.map(p => {
+    const iMine = me ? places.some(pl =>
+      pl.userId===me.uid &&
+      norm(pl.name)===norm(p.name) &&
+      norm(pl.country||'')===norm(poiCountry||'')
+    ) : false;
+    return {...p, iMine};
+  });
+
+  let final = poiFilter==='add'  ? withStatus.filter(p=>!p.iMine)
+            : poiFilter==='mine' ? withStatus.filter(p=>p.iMine)
+            : withStatus;
+
+  const total = withStatus.length;
+  const tenho = withStatus.filter(p=>p.iMine).length;
+
+  if (!final.length) {
+    body.innerHTML = `<div class="poi-summary">${total} encontrados · ${tenho} visitados · ${total-tenho} para visitar</div><div class="poi-msg">Nenhum resultado para o filtro</div>`;
+    return;
+  }
+
+  body.innerHTML = `<div class="poi-summary">${total} encontrados · <span style="color:var(--green)">${tenho} visitados</span> · <span style="color:var(--amber)">${total-tenho} para visitar</span></div>` +
+    final.map(p => {
+      const icon  = POI_ICONS[p.type]||'📍';
+      const label = POI_LABELS[p.type]||'Ponto';
+      return `<div class="poi-item${p.iMine?' mine':''}">
+        <span class="poi-icon">${icon}</span>
+        <div class="poi-info">
+          <div class="poi-name">${p.name}</div>
+          <div class="poi-meta">${label} · ${poiCity}${poiCountry?' · '+poiCountry:''}</div>
+        </div>
+        <button class="poi-add" ${p.iMine?'disabled':''} onclick="addPoiPlace(${p.lat},${p.lng},'${p.name.replace(/'/g,"\\'")}','${p.type}')">
+          ${p.iMine?'✓ tenho':'＋ add'}
+        </button>
+      </div>`;
+    }).join('');
+}
+
+function addPoiPlace(lat, lng, name, type) {
+  if (!me) { toast('Faça login para adicionar'); return; }
+  closePoiPanel();
+  const cat  = POI_TO_CAT[type]||'ponto';
+  const ck   = NAME_TO_CODE[norm(poiCountry)]||nameToCode[norm(poiCountry)]||'';
+  const cont = guessContinent(poiCountry, ck)||'';
+  openPanel();
+  document.getElementById('f-name').value    = name;
+  document.getElementById('f-city').value    = poiCity;
+  document.getElementById('f-country').value = poiCountry;
+  document.getElementById('f-cat').value     = cat;
+  document.getElementById('f-lat').value     = lat;
+  document.getElementById('f-lng').value     = lng;
+  if (document.getElementById('f-cc'))   document.getElementById('f-cc').value   = ck;
+  if (document.getElementById('f-cont')) document.getElementById('f-cont').value = cont;
+  toast('🏛 ' + name + ' — preencha os detalhes e salve!');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HARD ROCK HUNTER
+// ═══════════════════════════════════════════════════════════════
+let hrData   = [];   // todos os HRs do mundo (Overpass)
+let hrFilter = 'all';
+
+async function openHrPanel() {
+  document.getElementById('hr-panel').classList.add('open');
+  if (!hrData.length) await fetchHardRocks();
+  else renderHrList();
+}
+
+function closeHrPanel() {
+  document.getElementById('hr-panel').classList.remove('open');
+}
+
+function setHrFilter(f) {
+  hrFilter = f;
+  ['all','add','mine'].forEach(k => document.getElementById('hrf-'+k).classList.toggle('on', k===f));
+  renderHrList();
+}
+
+async function fetchHardRocks() {
+  document.getElementById('hr-body').innerHTML = '<div class="hr-status">🎸 Buscando no OpenStreetMap…</div>';
+  document.getElementById('hr-sub').textContent = 'Buscando…';
+
+  // Query global por brand Hard Rock Cafe + Hotel + Casino
+  const query = `[out:json][timeout:40];
+(
+  nwr["brand"="Hard Rock Cafe"];
+  nwr["brand"="Hard Rock Hotel"];
+  nwr["brand"="Hard Rock Casino"];
+  nwr["name"="Hard Rock Cafe"];
+  nwr["name"="Hard Rock Hotel"];
+  nwr["name"="Hard Rock Casino"];
+);
+out center 500;`;
+
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter', {
+      method:'POST', body:'data='+encodeURIComponent(query)
+    });
+    const d = await r.json();
+    const elements = d.elements || [];
+
+    // Deduplica por nome+país e extrai info
+    const seen = new Set();
+    hrData = elements.map(el => {
+      const tags   = el.tags || {};
+      const lat    = el.lat ?? el.center?.lat;
+      const lng    = el.lon ?? el.center?.lon;
+      const name   = tags['name:pt'] || tags.name || 'Hard Rock Cafe';
+      const city   = tags['addr:city'] || tags['addr:suburb'] || '';
+      const country= tags['addr:country'] || '';
+      const type   = (tags.brand || tags.name || '').toLowerCase().includes('hotel') ? 'Hotel'
+                   : (tags.brand || tags.name || '').toLowerCase().includes('casino') ? 'Casino' : 'Café';
+      return { lat, lng, name, city, country, type };
+    }).filter(h => {
+      if (!h.lat || !h.lng) return false;
+      const k = norm(h.name) + '|' + norm(h.city) + '|' + norm(h.country);
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    }).sort((a,b) => (a.country+a.city+a.name).localeCompare(b.country+b.city+b.name));
+
+    document.getElementById('hr-sub').textContent = hrData.length + ' localizações encontradas';
+    renderHrList();
+  } catch(e) {
+    document.getElementById('hr-body').innerHTML = '<div class="hr-status">Erro ao buscar — tente novamente</div>';
+    document.getElementById('hr-sub').textContent = 'Erro de conexão';
+  }
+}
+
+function renderHrList() {
+  const q = (document.getElementById('hr-search')?.value||'').toLowerCase();
+  const body = document.getElementById('hr-body');
+
+  let vis = hrData;
+  if (q) vis = vis.filter(h =>
+    (h.name||'').toLowerCase().includes(q) ||
+    (h.city||'').toLowerCase().includes(q) ||
+    (h.country||'').toLowerCase().includes(q)
+  );
+
+  // Verificar quais já tenho (por cidade + país + categoria hardrock)
+  const withStatus = vis.map(h => {
+    const iMine = me ? places.some(p =>
+      p.userId === me.uid &&
+      p.category === 'hardrock' &&
+      (norm(p.name) === norm(h.name) ||
+       (norm(p.city||p.name) === norm(h.city) && norm(p.country) === norm(h.country)))
+    ) : false;
+    return {...h, iMine};
+  });
+
+  if (hrFilter === 'add')  vis = withStatus.filter(h => !h.iMine);
+  else if (hrFilter === 'mine') vis = withStatus.filter(h => h.iMine);
+  else vis = withStatus;
+
+  const total = withStatus.length;
+  const tenho = withStatus.filter(h=>h.iMine).length;
+  const falta = total - tenho;
+
+  if (!vis.length) {
+    body.innerHTML = '<div class="hr-status">Nenhum resultado</div>';
+    return;
+  }
+
+  body.innerHTML = `<div class="hr-summary">${total} encontrados · <span style="color:var(--green)">${tenho} visitados</span> · <span style="color:#ef4444">${falta} para visitar</span></div>` +
+    vis.map(h => {
+      const loc = [h.city, h.country].filter(Boolean).join(' · ');
+      const typeIcon = h.type==='Hotel'?'🏨':h.type==='Casino'?'🎰':'☕';
+      return `<div class="hr-item${h.iMine?' mine':''}">
+        <span style="font-size:1.1rem">${typeIcon}</span>
+        <div class="hr-info">
+          <div class="hr-name">${h.name}</div>
+          ${loc?`<div class="hr-loc">${loc}</div>`:''}
+        </div>
+        <button class="hr-add" ${h.iMine?'disabled':''} onclick="addHardRock(${h.lat},${h.lng},'${(h.name).replace(/'/g,"\\'")}','${(h.city).replace(/'/g,"\\'")}','${(h.country).replace(/'/g,"\\'")}')">
+          ${h.iMine ? '✓ tenho' : '＋ adicionar'}
+        </button>
+      </div>`;
+    }).join('');
+}
+
+function addHardRock(lat, lng, name, city, country) {
+  if (!me) { toast('Faça login para adicionar'); return; }
+  closeHrPanel();
+  // Pré-preenche o painel diretamente sem geocoding extra
+  openPanel();
+  document.getElementById('f-name').value    = name;
+  document.getElementById('f-city').value    = city;
+  document.getElementById('f-country').value = country;
+  document.getElementById('f-cat').value     = 'hardrock';
+  document.getElementById('f-lat').value     = lat;
+  document.getElementById('f-lng').value     = lng;
+  // Tenta pegar continente/countryCode
+  const ck = NAME_TO_CODE[norm(country)] || nameToCode[norm(country)] || '';
+  if (document.getElementById('f-cc')) document.getElementById('f-cc').value = ck;
+  const cont = guessContinent(country, ck) || '';
+  if (document.getElementById('f-cont')) document.getElementById('f-cont').value = cont;
+  toast('🎸 ' + name + ' — preencha os detalhes e salve!');
+}
 // ═══════════════════════════════════════════════════════════════
 let lmUser = 'all', lmCat = '', lmSort = 'name', lmDir = 1;
 
