@@ -931,7 +931,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v89</div>
+<div id="ver">v90</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -2958,6 +2958,16 @@ function goToGeoResult(idx) {
   }, 30000);
 }
 
+function flyToPlace(lat, lng) {
+  if (!map) return;
+  map.setView([lat, lng], 14, {animate:true});
+  // Pulso visual no mapa
+  const circle = L.circleMarker([lat, lng], {
+    radius:20, color:'var(--amber)', weight:2, fillOpacity:0, opacity:.8
+  }).addTo(map);
+  setTimeout(()=>{ try{ map.removeLayer(circle); }catch(e){} }, 2000);
+}
+
 function addFromGeoPin(lat, lng, name) {
   toast('🔍 Identificando ' + name + '…');
   reverseGeocode(lat, lng, name);
@@ -3141,13 +3151,13 @@ function renderPoiList() {
     final.map(p => {
       const icon  = POI_ICONS[p.type]||'📍';
       const label = POI_LABELS[p.type]||'Ponto';
-      return `<div class="poi-item${p.iMine?' mine':''}">
+      return `<div class="poi-item${p.iMine?' mine':''}" onclick="flyToPlace(${p.lat},${p.lng})" style="cursor:pointer" title="Ver no mapa">
         <span class="poi-icon">${icon}</span>
         <div class="poi-info">
           <div class="poi-name">${p.name}</div>
           <div class="poi-meta">${label} · ${poiCity}${poiCountry?' · '+poiCountry:''}</div>
         </div>
-        <button class="poi-add" ${p.iMine?'disabled':''} onclick="addPoiPlace(${p.lat},${p.lng},'${p.name.replace(/'/g,"\\'")}','${p.type}')">
+        <button class="poi-add" ${p.iMine?'disabled':''} onclick="event.stopPropagation();addPoiPlace(${p.lat},${p.lng},'${p.name.replace(/'/g,"\\'")}','${p.type}')">
           ${p.iMine?'✓ tenho':'＋ add'}
         </button>
       </div>`;
@@ -3224,10 +3234,13 @@ out 500;`;
       const lat    = el.lat;
       const lng    = el.lon;
       if (!lat || !lng) return null;
-      const name   = tags['name:pt'] || tags.name || 'Hard Rock Cafe';
-      const city   = tags['addr:city'] || tags['addr:suburb'] || tags['addr:town'] || '';
-      const country= tags['addr:country'] || tags['addr:country_code'] || '';
-      const type   = (tags.brand||tags.name||'').toLowerCase().includes('hotel') ? 'Hotel'
+      const name   = tags['name:en'] || tags['name:pt'] || tags.name || 'Hard Rock Cafe';
+      // Prefere nome em inglês para a cidade; filtra scripts não-latinos
+      const rawCity = tags['addr:city:en'] || tags['addr:city'] || tags['addr:suburb'] || tags['addr:town'] || '';
+      const city    = /^[\w\s\-\.,\'()]+$/.test(rawCity) ? rawCity : '';
+      const cc      = (tags['addr:country'] || tags['addr:country_code'] || '').toUpperCase();
+      const country = cc ? (()=>{ try { return new Intl.DisplayNames(['pt'],{type:'region'}).of(cc)||cc; } catch(e){return cc;} })() : '';
+      const type    = (tags.brand||tags.name||'').toLowerCase().includes('hotel') ? 'Hotel'
                    : (tags.brand||tags.name||'').toLowerCase().includes('casino') ? 'Casino' : 'Café';
       const k = norm(name + '|' + city + '|' + country);
       if (seen.has(k)) return null;
@@ -3289,13 +3302,13 @@ function renderHrList() {
     vis.map(h => {
       const loc = [h.city, h.country].filter(Boolean).join(' · ');
       const typeIcon = h.type==='Hotel'?'🏨':h.type==='Casino'?'🎰':'☕';
-      return `<div class="hr-item${h.iMine?' mine':''}">
+      return `<div class="hr-item${h.iMine?' mine':''}" onclick="flyToPlace(${h.lat},${h.lng})" style="cursor:pointer" title="Ver no mapa">
         <span style="font-size:1.1rem">${typeIcon}</span>
         <div class="hr-info">
           <div class="hr-name">${h.name}</div>
           ${loc?`<div class="hr-loc">${loc}</div>`:''}
         </div>
-        <button class="hr-add" ${h.iMine?'disabled':''} onclick="addHardRock(${h.lat},${h.lng},'${(h.name).replace(/'/g,"\\'")}','${(h.city).replace(/'/g,"\\'")}','${(h.country).replace(/'/g,"\\'")}')">
+        <button class="hr-add" ${h.iMine?'disabled':''} onclick="event.stopPropagation();addHardRock(${h.lat},${h.lng},'${(h.name).replace(/'/g,"\\'")}','${(h.city).replace(/'/g,"\\'")}','${(h.country).replace(/'/g,"\\'")}')">
           ${h.iMine ? '✓ tenho' : '＋ adicionar'}
         </button>
       </div>`;
