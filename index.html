@@ -931,7 +931,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
 </div>
 
 <!-- VERSION -->
-<div id="ver">v85</div>
+<div id="ver">v86</div>
 
 <!-- TOP BAR -->
 <div id="topbar">
@@ -3250,13 +3250,12 @@ function renderHrList() {
     (h.country||'').toLowerCase().includes(q)
   );
 
-  // Verificar quais já tenho (por cidade + país + categoria hardrock)
+  // Verificar quais já tenho — só por nome normalizado + categoria hardrock
   const withStatus = vis.map(h => {
     const iMine = me ? places.some(p =>
       p.userId === me.uid &&
       p.category === 'hardrock' &&
-      (norm(p.name) === norm(h.name) ||
-       (norm(p.city||p.name) === norm(h.city) && norm(p.country) === norm(h.country)))
+      norm(p.name) === norm(h.name)
     ) : false;
     return {...h, iMine};
   });
